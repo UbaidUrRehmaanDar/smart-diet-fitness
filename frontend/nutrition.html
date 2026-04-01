@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nutrition - Smart Diet & Fitness</title>
+    
+    <!-- Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            /* Established Color Palette */
+            --bg-body: #f4f7fb;
+            --text-dark: #1b3679;
+            --text-medium: #4a6aa6;
+            --text-light: #8ca7db;
+            --primary-blue: #3d7bf4;
+            --primary-blue-hover: #2960cc;
+            --input-bg: #f0f5ff;
+            --bg-right: #ffffff;
+            --border-light: #e5edf9;
+            
+            /* Gradients */
+            --btn-gradient: linear-gradient(135deg, #4d8df5 0%, #3470e8 100%);
+            --btn-gradient-hover: linear-gradient(135deg, #3d7bf4 0%, #2056c7 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-dark);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* --- Animations --- */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .delay-1 { transition-delay: 0.1s; }
+        .delay-2 { transition-delay: 0.2s; }
+        .delay-3 { transition-delay: 0.3s; }
+        .delay-4 { transition-delay: 0.4s; }
+
+        /* --- Navbar --- */
+        .navbar {
+            background-color: var(--bg-right);
+            padding: 1rem 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 20px rgba(27, 54, 121, 0.04);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 3rem;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-medium);
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: color 0.3s ease;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid transparent;
+        }
+
+        .nav-links a:hover { color: var(--primary-blue); }
+        .nav-links a.active {
+            color: var(--primary-blue);
+            border-bottom: 2px solid var(--primary-blue);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .search-bar {
+            position: relative;
+        }
+
+        .search-bar i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+        }
+
+        .search-bar input {
+            background-color: var(--input-bg);
+            border: none;
+            padding: 0.7rem 1rem 0.7rem 2.5rem;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            outline: none;
+            width: 250px;
+            transition: all 0.3s ease;
+        }
+
+        .search-bar input:focus {
+            background-color: #fff;
+            box-shadow: 0 0 0 2px var(--primary-blue);
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            color: var(--text-medium);
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .icon-btn:hover { color: var(--primary-blue); }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #fde047;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #b45309;
+            font-weight: 700;
+            border: 2px solid var(--border-light);
+            cursor: pointer;
+        }
+
+        /* --- Main Layout Grid --- */
+        .nutrition-container {
+            padding: 3rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1.8fr 1fr;
+            gap: 2.5rem;
+            align-items: start;
+        }
+
+        .card {
+            background-color: var(--bg-right);
+            border-radius: 24px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(27, 54, 121, 0.04);
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 1.5rem;
+        }
+
+        /* --- Left Column: Date & Meals --- */
+        
+        /* Date Selector */
+        .date-selector {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: var(--input-bg);
+            padding: 1.5rem 2rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+        }
+
+        .date-selector button {
+            background: none;
+            border: none;
+            color: var(--text-dark);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .date-selector button:hover { color: var(--primary-blue); }
+
+        .date-info { text-align: center; }
+        .date-info h2 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 0.2rem;
+        }
+        .date-info span {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Meal Cards */
+        .meal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+        }
+
+        .meal-header h3 {
+            font-size: 1.4rem;
+            color: var(--text-dark);
+            margin-bottom: 0.3rem;
+        }
+
+        .meal-header p {
+            font-size: 0.85rem;
+            color: var(--text-medium);
+            font-weight: 500;
+        }
+
+        .meal-total {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .meal-total span {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-medium);
+        }
+
+        .food-list {
+            list-style: none;
+            margin-bottom: 1.5rem;
+        }
+
+        .food-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem 0;
+            border-bottom: 1px dashed var(--border-light);
+        }
+
+        .food-item:last-child { border-bottom: none; }
+
+        .food-name {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text-medium);
+        }
+
+        .food-name::before {
+            content: '';
+            display: block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: var(--input-placeholder);
+        }
+
+        .food-kcal {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .btn-add-food {
+            background: none;
+            border: none;
+            color: var(--primary-blue);
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: color 0.3s ease;
+        }
+
+        .btn-add-food:hover { color: var(--text-dark); }
+
+        /* --- Right Column: Stats & Progress --- */
+
+        /* Circular Progress */
+        .progress-circle-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 2rem auto;
+        }
+
+        .circular-chart {
+            display: block;
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        .circle-bg {
+            fill: none;
+            stroke: var(--input-bg);
+            stroke-width: 3.5;
+        }
+
+        .circle {
+            fill: none;
+            stroke-width: 3.5;
+            stroke-linecap: round;
+            stroke: var(--primary-blue);
+            stroke-dasharray: 0, 100;
+            transition: stroke-dasharray 1.5s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .chart-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .chart-text .val {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            display: block;
+            line-height: 1;
+            margin-bottom: 0.2rem;
+        }
+
+        .chart-text .lbl {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-medium);
+            letter-spacing: 0.5px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-light);
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .stat-row:last-child { border-bottom: none; padding-bottom: 0; }
+        
+        .stat-label { color: var(--text-medium); }
+        .stat-val { font-weight: 700; color: var(--text-dark); }
+        .stat-val.blue { color: var(--primary-blue); }
+
+        /* Macros */
+        .macro-item { margin-bottom: 1.5rem; }
+        .macro-item:last-child { margin-bottom: 0; }
+
+        .macro-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.6rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .macro-header span:first-child { color: var(--text-dark); }
+        .macro-header span:last-child { color: var(--text-medium); }
+
+        .macro-bar-bg {
+            width: 100%;
+            height: 8px;
+            background-color: var(--input-bg);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .macro-bar-fill {
+            height: 100%;
+            background-color: var(--text-dark); /* Using dark blue based on design */
+            border-radius: 10px;
+            transition: width 1s ease-out;
+        }
+
+        /* Hydration */
+        .hydration-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .hydration-header h3 {
+            font-size: 1.2rem;
+            color: var(--text-dark);
+        }
+
+        .hydration-header span {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+        }
+
+        .hydration-tracker {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .drops-container {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .drop-icon {
+            font-size: 1.5rem;
+            color: var(--input-bg);
+            transition: color 0.3s ease;
+        }
+
+        .drop-icon.filled { color: var(--primary-blue); }
+
+        .btn-quick-add {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background-color: var(--primary-blue);
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(61, 123, 244, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .btn-quick-add:hover {
+            background-color: var(--primary-blue-hover);
+            transform: scale(1.05);
+        }
+
+        .btn-quick-add:active { transform: scale(0.95); }
+
+        /* --- FAB --- */
+        .fab {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--btn-gradient);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 10px 25px rgba(61, 123, 244, 0.4);
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .fab:hover { transform: scale(1.1) rotate(90deg); }
+
+        /* --- Responsive Design --- */
+        @media (max-width: 1024px) {
+            .nutrition-container {
+                grid-template-columns: 1fr;
+            }
+            .nav-links, .search-bar { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar fade-in">
+        <div class="nav-left">
+            <div class="logo">
+                <i class="fa-solid fa-leaf"></i> Smart Diet & Fitness
+            </div>
+            <div class="nav-links">
+                <a href="dashboard.html">Dashboard</a>
+                <a href="nutrition.html" class="active">Nutrition</a>
+                <a href="workouts.html">Workouts</a>
+                <a href="progress.html">Progress</a>
+                <a href="reports.html">Reports</a>
+            </div>
+        </div>
+        <div class="nav-right">
+            <div class="search-bar">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" placeholder="Search nutrients...">
+            </div>
+            <button class="icon-btn" onclick="window.location.href='notification.html'"><i class="fa-regular fa-bell"></i></button>
+            <button class="icon-btn" onclick="window.location.href='settings.html'"><i class="fa-solid fa-gear"></i></button>
+            <div class="user-avatar" onclick="window.location.href='achievements.html'">W</div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="nutrition-container">
+
+        <!-- Left Column: Meals -->
+        <div class="meals-column">
+            
+            <!-- Date Selector -->
+            <div class="date-selector fade-in delay-1">
+                <button><i class="fa-solid fa-chevron-left"></i></button>
+                <div class="date-info">
+                    <h2>Today, October 24th</h2>
+                    <span>Diet Plan View</span>
+                </div>
+                <button><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+
+            <!-- Breakfast Card -->
+            <div class="card meal-card fade-in delay-2">
+                <div class="meal-header">
+                    <div>
+                        <h3>Breakfast</h3>
+                        <p>Recommended: 450-550 kcal</p>
+                    </div>
+                    <div class="meal-total">412 <span>kcal</span></div>
+                </div>
+                <ul class="food-list">
+                    <li class="food-item">
+                        <span class="food-name">Greek Yogurt - 150g</span>
+                        <span class="food-kcal">180 kcal</span>
+                    </li>
+                    <li class="food-item">
+                        <span class="food-name">Blueberries - 50g</span>
+                        <span class="food-kcal">42 kcal</span>
+                    </li>
+                    <li class="food-item">
+                        <span class="food-name">Oats with Almond Milk</span>
+                        <span class="food-kcal">190 kcal</span>
+                    </li>
+                </ul>
+                <button class="btn-add-food"><i class="fa-solid fa-plus"></i> Add Food</button>
+            </div>
+
+            <!-- Lunch Card -->
+            <div class="card meal-card fade-in delay-3">
+                <div class="meal-header">
+                    <div>
+                        <h3>Lunch</h3>
+                        <p>Recommended: 600-750 kcal</p>
+                    </div>
+                    <div class="meal-total">685 <span>kcal</span></div>
+                </div>
+                <ul class="food-list">
+                    <li class="food-item">
+                        <span class="food-name">Grilled Chicken Breast - 200g</span>
+                        <span class="food-kcal">330 kcal</span>
+                    </li>
+                    <li class="food-item">
+                        <span class="food-name">Quinoa & Mixed Greens</span>
+                        <span class="food-kcal">255 kcal</span>
+                    </li>
+                    <li class="food-item">
+                        <span class="food-name">Olive Oil Dressing</span>
+                        <span class="food-kcal">100 kcal</span>
+                    </li>
+                </ul>
+                <button class="btn-add-food"><i class="fa-solid fa-plus"></i> Add Food</button>
+            </div>
+
+            <!-- Dinner Card -->
+            <div class="card meal-card fade-in delay-4">
+                <div class="meal-header">
+                    <div>
+                        <h3>Dinner</h3>
+                        <p>Recommended: 500-650 kcal</p>
+                    </div>
+                    <div class="meal-total">540 <span>kcal</span></div>
+                </div>
+                <ul class="food-list">
+                    <li class="food-item">
+                        <span class="food-name">Baked Salmon - 150g</span>
+                        <span class="food-kcal">310 kcal</span>
+                    </li>
+                    <li class="food-item">
+                        <span class="food-name">Steamed Asparagus</span>
+                        <span class="food-kcal">45 kcal</span>
+                    </li>
+                    <li class="food-item">
+                        <span class="food-name">Brown Rice - 100g</span>
+                        <span class="food-kcal">185 kcal</span>
+                    </li>
+                </ul>
+                <button class="btn-add-food"><i class="fa-solid fa-plus"></i> Add Food</button>
+            </div>
+
+        </div>
+
+        <!-- Right Column: Stats -->
+        <div class="stats-column">
+            
+            <!-- Daily Progress Card -->
+            <div class="card fade-in delay-1">
+                <h3 class="card-title">Daily Progress</h3>
+                
+                <div class="progress-circle-container">
+                    <svg viewBox="0 0 36 36" class="circular-chart">
+                        <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                        <path class="circle" id="nutritionCircle" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    </svg>
+                    <div class="chart-text">
+                        <span class="val">1,850</span>
+                        <span class="lbl">of 2,200 kcal</span>
+                    </div>
+                </div>
+
+                <div class="stat-row">
+                    <span class="stat-label">Remaining</span>
+                    <span class="stat-val blue">350 kcal</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Burned (Active)</span>
+                    <span class="stat-val">420 kcal</span>
+                </div>
+            </div>
+
+            <!-- Macronutrients Card -->
+            <div class="card fade-in delay-2">
+                <h3 class="card-title">Macronutrients</h3>
+                
+                <div class="macro-item">
+                    <div class="macro-header">
+                        <span>Protein</span>
+                        <span>142g / 180g</span>
+                    </div>
+                    <div class="macro-bar-bg">
+                        <div class="macro-bar-fill" id="proteinFill" style="width: 0%;"></div>
+                    </div>
+                </div>
+
+                <div class="macro-item">
+                    <div class="macro-header">
+                        <span>Carbohydrates</span>
+                        <span>210g / 250g</span>
+                    </div>
+                    <div class="macro-bar-bg">
+                        <div class="macro-bar-fill" id="carbsFill" style="width: 0%; background-color: var(--primary-blue);"></div>
+                    </div>
+                </div>
+
+                <div class="macro-item">
+                    <div class="macro-header">
+                        <span>Fats</span>
+                        <span>54g / 70g</span>
+                    </div>
+                    <div class="macro-bar-bg">
+                        <div class="macro-bar-fill" id="fatsFill" style="width: 0%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hydration Status Card -->
+            <div class="card fade-in delay-3">
+                <div class="hydration-header">
+                    <h3>Hydration Status</h3>
+                    <span id="waterText">1.5L / 2.0L</span>
+                </div>
+                
+                <div class="hydration-tracker">
+                    <div class="drops-container" id="dropContainer">
+                        <!-- 8 Drops total -->
+                        <i class="fa-solid fa-droplet drop-icon filled"></i>
+                        <i class="fa-solid fa-droplet drop-icon filled"></i>
+                        <i class="fa-solid fa-droplet drop-icon filled"></i>
+                        <i class="fa-solid fa-droplet drop-icon filled"></i>
+                        <i class="fa-solid fa-droplet drop-icon filled"></i>
+                        <i class="fa-solid fa-droplet drop-icon filled"></i>
+                        <i class="fa-solid fa-droplet drop-icon"></i>
+                        <i class="fa-solid fa-droplet drop-icon"></i>
+                    </div>
+                    <button class="btn-quick-add" onclick="addWaterDrop()">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Floating Action Button -->
+    <button class="fab fade-in delay-4" title="Log Meal">
+        <i class="fa-solid fa-plus"></i>
+    </button>
+
+    <!-- Scripts -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // 1. Entrance Animations
+            setTimeout(() => {
+                const elements = document.querySelectorAll('.fade-in');
+                elements.forEach(el => el.classList.add('visible'));
+            }, 100);
+
+            // 2. Animate Circular Chart (1850 / 2200 = ~84%)
+            setTimeout(() => {
+                const circle = document.getElementById('nutritionCircle');
+                circle.style.strokeDasharray = "84, 100";
+            }, 500);
+
+            // 3. Animate Macro Bars
+            setTimeout(() => {
+                document.getElementById('proteinFill').style.width = "78%"; // 142/180
+                document.getElementById('carbsFill').style.width = "84%";   // 210/250
+                document.getElementById('fatsFill').style.width = "77%";    // 54/70
+            }, 600);
+        });
+
+        // 4. Hydration Quick Add Logic
+        let currentDrops = 6; // starts with 6 filled (1.5L, assuming 250ml per drop)
+        const maxDrops = 8;
+
+        function addWaterDrop() {
+            if (currentDrops < maxDrops) {
+                const drops = document.querySelectorAll('#dropContainer .drop-icon');
+                drops[currentDrops].classList.add('filled');
+                currentDrops++;
+                
+                // Calculate and update text (250ml or 0.25L per drop)
+                const currentLiters = (currentDrops * 0.25).toFixed(1);
+                document.getElementById('waterText').innerText = `${currentLiters}L / 2.0L`;
+            }
+        }
+    </script>
+
+</body>
+</html>

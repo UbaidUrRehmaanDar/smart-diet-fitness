@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Onboarding Step 3 - Smart Diet & Fitness</title>
+    
+    <!-- Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            /* Established Color Palette */
+            --bg-body: #f4f7fb;
+            --text-dark: #1b3679;
+            --text-medium: #4a6aa6;
+            --text-light: #8ca7db;
+            --primary-blue: #3d7bf4;
+            --primary-blue-hover: #2960cc;
+            --input-bg: #f0f5ff;
+            --bg-right: #ffffff;
+            --border-light: #e5edf9;
+            
+            /* Gradients */
+            --btn-gradient: linear-gradient(135deg, #4d8df5 0%, #3470e8 100%);
+            --btn-gradient-hover: linear-gradient(135deg, #3d7bf4 0%, #2056c7 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: var(--bg-body);
+            padding: 2rem;
+            color: var(--text-dark);
+        }
+
+        /* --- Animations --- */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .delay-1 { transition-delay: 0.1s; }
+        .delay-2 { transition-delay: 0.2s; }
+        .delay-3 { transition-delay: 0.3s; }
+        .delay-4 { transition-delay: 0.4s; }
+
+        /* --- Layout --- */
+        .onboarding-card {
+            background-color: var(--bg-right);
+            width: 100%;
+            max-width: 850px;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(27, 54, 121, 0.06);
+            padding: 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* --- Progress Header --- */
+        .progress-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .progress-track {
+            width: 250px;
+            height: 6px;
+            background-color: var(--border-light);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            width: 100%; /* Step 3 of 3 is complete */
+            height: 100%;
+            background-color: var(--primary-blue);
+            border-radius: 10px;
+        }
+
+        .step-indicator {
+            position: absolute;
+            right: 0;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* --- Headings --- */
+        .text-center {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .text-center h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            letter-spacing: -0.5px;
+        }
+
+        .text-center p {
+            color: var(--text-medium);
+            font-size: 1.05rem;
+            line-height: 1.5;
+        }
+
+        /* --- Medical Conditions Section --- */
+        .medical-section {
+            margin-bottom: 2.5rem;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--text-dark);
+        }
+
+        .medical-textarea {
+            width: 100%;
+            padding: 1.2rem;
+            border: 2px solid transparent;
+            border-radius: 16px;
+            background-color: var(--input-bg);
+            font-size: 0.95rem;
+            color: var(--text-dark);
+            outline: none;
+            resize: vertical;
+            min-height: 100px;
+            transition: all 0.3s ease;
+        }
+
+        .medical-textarea::placeholder {
+            color: var(--text-light);
+        }
+
+        .medical-textarea:focus {
+            border-color: var(--primary-blue);
+            background-color: #fff;
+            box-shadow: 0 4px 12px rgba(61, 123, 244, 0.1);
+        }
+
+        /* --- Sync Cards Grid --- */
+        .sync-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .sync-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.5rem;
+            background-color: var(--bg-right);
+            border: 2px solid var(--border-light);
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .sync-card:hover {
+            border-color: var(--text-light);
+            box-shadow: 0 8px 20px rgba(27, 54, 121, 0.04);
+        }
+
+        .sync-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .sync-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            background-color: var(--input-bg);
+        }
+
+        .apple-icon { color: #ff3b30; }
+        .google-icon { color: #34a853; }
+        .garmin-icon { color: #4b5563; }
+        .fitbit-icon { color: #06b6d4; }
+
+        .sync-info h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .sync-info p {
+            font-size: 0.8rem;
+            color: var(--text-medium);
+        }
+
+        .sync-status {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--primary-blue);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: all 0.3s ease;
+        }
+
+        /* Connected State */
+        .sync-card.connected {
+            border-color: var(--primary-blue);
+            background-color: var(--input-bg);
+        }
+
+        .sync-card.connected .sync-status {
+            color: var(--primary-blue);
+        }
+
+        /* --- Terms Checkbox --- */
+        .terms-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.8rem;
+            margin-bottom: 2rem;
+        }
+
+        .custom-checkbox {
+            appearance: none;
+            width: 22px;
+            height: 22px;
+            border: 2px solid var(--text-light);
+            border-radius: 6px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .custom-checkbox:checked {
+            background-color: var(--primary-blue);
+            border-color: var(--primary-blue);
+        }
+
+        .custom-checkbox:checked::after {
+            content: '\f00c';
+            font-family: 'FontAwesome';
+            color: white;
+            font-size: 12px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .terms-text {
+            font-size: 0.9rem;
+            color: var(--text-medium);
+        }
+
+        .terms-text a {
+            color: var(--primary-blue);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .terms-text a:hover {
+            color: var(--text-dark);
+        }
+
+        /* --- Footer Actions --- */
+        .actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .btn-back {
+            color: var(--primary-blue);
+            background: none;
+            border: none;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: color 0.3s ease;
+        }
+
+        .btn-back:hover {
+            color: var(--text-dark);
+        }
+
+        /* Super Smooth Button styles */
+        .btn-finish {
+            padding: 1rem 2.5rem;
+            border: none;
+            background: var(--btn-gradient);
+            color: white;
+            font-size: 1.05rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 50px; /* Pilled initially */
+            box-shadow: 0 4px 15px rgba(61, 123, 244, 0.3);
+            transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-finish:hover:not(:disabled) {
+            background: var(--btn-gradient-hover);
+            border-radius: 12px; /* Morphs to rounded rectangle */
+            box-shadow: 0 8px 25px rgba(61, 123, 244, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .btn-finish:active:not(:disabled) {
+            transform: translateY(0);
+            box-shadow: 0 2px 10px rgba(61, 123, 244, 0.3);
+        }
+
+        .btn-finish:disabled {
+            background: var(--border-light);
+            color: var(--text-light);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* --- Responsive Design --- */
+        @media (max-width: 850px) {
+            .onboarding-card {
+                padding: 3rem 2rem;
+            }
+            .sync-grid {
+                grid-template-columns: 1fr;
+            }
+            .step-indicator {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="onboarding-card">
+        
+        <!-- Progress Header -->
+        <div class="progress-header fade-in">
+            <div class="progress-track">
+                <div class="progress-fill"></div>
+            </div>
+            <span class="step-indicator">Step 3 of 3</span>
+        </div>
+
+        <!-- Title -->
+        <div class="text-center fade-in delay-1">
+            <h1>Finalize & Sync</h1>
+            <p>Add medical details and connect devices to track your health data.</p>
+        </div>
+
+        <!-- Medical Conditions (Project Overview Requirement) -->
+        <div class="medical-section fade-in delay-2">
+            <h3 class="section-title">Medical Conditions (Optional)</h3>
+            <textarea class="medical-textarea" placeholder="List any medical conditions or injuries (e.g., Asthma, previous knee injury, Diabetes) so our recommendation engine can adjust your plans securely..."></textarea>
+        </div>
+
+        <!-- Device Sync Cards -->
+        <div class="sync-grid fade-in delay-3">
+            
+            <!-- Apple Health -->
+            <div class="sync-card" onclick="toggleSync(this)">
+                <div class="sync-left">
+                    <div class="sync-icon apple-icon"><i class="fa-solid fa-heart"></i></div>
+                    <div class="sync-info">
+                        <h4>Apple Health</h4>
+                        <p>Sync steps, sleep, and heart rate.</p>
+                    </div>
+                </div>
+                <div class="sync-status">
+                    <span class="status-text">Connect</span>
+                </div>
+            </div>
+
+            <!-- Google Fit -->
+            <div class="sync-card" onclick="toggleSync(this)">
+                <div class="sync-left">
+                    <div class="sync-icon google-icon"><i class="fa-solid fa-plus-circle"></i></div>
+                    <div class="sync-info">
+                        <h4>Google Fit</h4>
+                        <p>Import workouts and daily activity.</p>
+                    </div>
+                </div>
+                <div class="sync-status">
+                    <span class="status-text">Connect</span>
+                </div>
+            </div>
+
+            <!-- Garmin -->
+            <div class="sync-card" onclick="toggleSync(this)">
+                <div class="sync-left">
+                    <div class="sync-icon garmin-icon"><i class="fa-solid fa-stopwatch"></i></div>
+                    <div class="sync-info">
+                        <h4>Garmin</h4>
+                        <p>High-precision GPS and cycling data.</p>
+                    </div>
+                </div>
+                <div class="sync-status">
+                    <span class="status-text">Connect</span>
+                </div>
+            </div>
+
+            <!-- Fitbit -->
+            <div class="sync-card" onclick="toggleSync(this)">
+                <div class="sync-left">
+                    <div class="sync-icon fitbit-icon"><i class="fa-solid fa-gem"></i></div>
+                    <div class="sync-info">
+                        <h4>Fitbit</h4>
+                        <p>Auto-track calories and active minutes.</p>
+                    </div>
+                </div>
+                <div class="sync-status">
+                    <span class="status-text">Connect</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Terms Agreement -->
+        <div class="terms-wrapper fade-in delay-4">
+            <input type="checkbox" id="termsCheck" class="custom-checkbox" onchange="validateForm()">
+            <label for="termsCheck" class="terms-text">
+                I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+            </label>
+        </div>
+
+        <!-- Bottom Actions -->
+        <div class="actions fade-in delay-4">
+            <button class="btn-back" onclick="history.back()">
+                <i class="fa-solid fa-arrow-left"></i> Back
+            </button>
+            <button class="btn-finish" id="finishBtn" disabled onclick="window.location.href='dashboard.html'">
+                Finish & Go to Dashboard
+            </button>
+        </div>
+
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // Trigger entrance animations
+            setTimeout(() => {
+                const elements = document.querySelectorAll('.fade-in');
+                elements.forEach(el => el.classList.add('visible'));
+            }, 100);
+        });
+
+        // Toggle Sync Card State
+        function toggleSync(card) {
+            card.classList.toggle('connected');
+            const statusText = card.querySelector('.status-text');
+            
+            if (card.classList.contains('connected')) {
+                // Change text and add a checkmark icon dynamically
+                statusText.innerHTML = '<i class="fa-solid fa-circle-check"></i> Connected';
+            } else {
+                // Revert to default text
+                statusText.innerHTML = 'Connect';
+            }
+        }
+
+        // Enable/Disable Finish Button based on Terms Checkbox
+        function validateForm() {
+            const termsChecked = document.getElementById('termsCheck').checked;
+            const finishBtn = document.getElementById('finishBtn');
+            
+            if (termsChecked) {
+                finishBtn.removeAttribute('disabled');
+            } else {
+                finishBtn.setAttribute('disabled', 'true');
+            }
+        }
+    </script>
+
+</body>
+</html>

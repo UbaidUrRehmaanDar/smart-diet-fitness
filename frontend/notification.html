@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications - Smart Diet & Fitness</title>
+    
+    <!-- Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            /* Established Color Palette */
+            --bg-body: #f4f7fb;
+            --text-dark: #1b3679;
+            --text-medium: #4a6aa6;
+            --text-light: #8ca7db;
+            --primary-blue: #3d7bf4;
+            --primary-blue-hover: #2960cc;
+            --input-bg: #f0f5ff;
+            --bg-right: #ffffff;
+            --border-light: #e5edf9;
+            --success-green: #10b981;
+            --warning-gold: #f59e0b;
+            
+            /* Gradients */
+            --btn-gradient: linear-gradient(135deg, #4d8df5 0%, #3470e8 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* --- Animations --- */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .delay-1 { transition-delay: 0.1s; }
+        .delay-2 { transition-delay: 0.2s; }
+        .delay-3 { transition-delay: 0.3s; }
+        .delay-4 { transition-delay: 0.4s; }
+
+        /* --- Navbar --- */
+        .navbar {
+            background-color: var(--bg-right);
+            padding: 1rem 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 20px rgba(27, 54, 121, 0.04);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 3rem;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-medium);
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: color 0.3s ease;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid transparent;
+        }
+
+        .nav-links a:hover { color: var(--primary-blue); }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            color: var(--text-medium);
+            cursor: pointer;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+
+        .icon-btn:hover { color: var(--primary-blue); }
+        
+        .icon-btn.active {
+            color: var(--primary-blue);
+        }
+        
+        .icon-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background-color: var(--primary-blue);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background-color: #ef4444;
+            color: white;
+            font-size: 0.6rem;
+            font-weight: 700;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--bg-right);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #fde047;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #b45309;
+            font-weight: 700;
+            border: 2px solid var(--border-light);
+            cursor: pointer;
+        }
+
+        /* --- Main Layout --- */
+        .main-content {
+            padding: 3rem;
+            width: 100%;
+            flex: 1;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* --- Notifications Card --- */
+        .notifications-card {
+            background-color: var(--bg-right);
+            border-radius: 24px;
+            width: 100%;
+            max-width: 800px;
+            box-shadow: 0 15px 40px rgba(27, 54, 121, 0.05);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .notif-header-area {
+            padding: 2.5rem 2.5rem 0 2.5rem;
+        }
+
+        .notif-title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 2rem;
+        }
+
+        .notif-title h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            letter-spacing: -0.5px;
+            margin-bottom: 0.3rem;
+        }
+
+        .notif-title p {
+            font-size: 0.9rem;
+            color: var(--text-medium);
+        }
+
+        .btn-mark-read {
+            background-color: var(--input-bg);
+            color: var(--primary-blue);
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-mark-read:hover {
+            background-color: var(--border-light);
+            color: var(--text-dark);
+        }
+
+        /* --- Tabs --- */
+        .notif-tabs {
+            display: flex;
+            gap: 2rem;
+            border-bottom: 2px solid var(--border-light);
+            padding: 0 2.5rem;
+        }
+
+        .tab {
+            background: none;
+            border: none;
+            padding: 1rem 0;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-medium);
+            cursor: pointer;
+            position: relative;
+            transition: color 0.3s;
+        }
+
+        .tab:hover {
+            color: var(--text-dark);
+        }
+
+        .tab.active {
+            color: var(--primary-blue);
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: var(--primary-blue);
+            border-radius: 3px 3px 0 0;
+        }
+
+        /* --- Notification List --- */
+        .notif-list {
+            display: flex;
+            flex-direction: column;
+            padding: 1rem 1.5rem;
+        }
+
+        .notif-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1.25rem;
+            padding: 1.25rem;
+            border-radius: 16px;
+            transition: background-color 0.3s ease;
+            position: relative;
+        }
+
+        .notif-item:hover {
+            background-color: #f9fbff;
+        }
+
+        /* Unread State Styling */
+        .notif-item.unread {
+            background-color: var(--input-bg);
+        }
+
+        .notif-item.unread::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 60%;
+            width: 4px;
+            background-color: var(--primary-blue);
+            border-radius: 0 4px 4px 0;
+        }
+
+        /* Icons */
+        .notif-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .icon-blue { background-color: #dbe7ff; color: var(--primary-blue); }
+        .icon-gold { background-color: #fef3c7; color: var(--warning-gold); }
+        .icon-green { background-color: #d1fae5; color: var(--success-green); }
+        .icon-gray { background-color: var(--border-light); color: var(--text-medium); }
+
+        /* Content */
+        .notif-content {
+            flex: 1;
+        }
+
+        .notif-content h4 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 0.3rem;
+        }
+
+        .notif-content p {
+            font-size: 0.9rem;
+            color: var(--text-medium);
+            line-height: 1.4;
+        }
+
+        .notif-time {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        .notif-item.unread .notif-time {
+            color: var(--primary-blue);
+        }
+
+        /* --- Footer / View Older --- */
+        .notif-footer {
+            text-align: center;
+            padding: 1.5rem;
+            border-top: 1px solid var(--border-light);
+            background-color: #f9fbff;
+        }
+
+        .btn-view-all {
+            background: none;
+            border: none;
+            color: var(--primary-blue);
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .btn-view-all:hover {
+            color: var(--primary-blue-hover);
+        }
+
+        /* --- Responsive --- */
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .main-content { padding: 1.5rem; }
+            .notif-header-area { padding: 1.5rem 1.5rem 0 1.5rem; }
+            .notif-tabs { padding: 0 1.5rem; gap: 1rem; overflow-x: auto; white-space: nowrap; }
+            .notif-list { padding: 0.5rem; }
+            .notif-item { padding: 1rem; flex-direction: column; position: relative; }
+            .notif-time { position: absolute; top: 1.2rem; right: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar fade-in">
+        <div class="nav-left">
+            <div class="logo">
+                <i class="fa-solid fa-leaf"></i> Smart Diet & Fitness
+            </div>
+            <div class="nav-links">
+                <a href="dashboard.html">Dashboard</a>
+                <a href="nutrition.html">Nutrition</a>
+                <a href="workouts.html">Workouts</a>
+                <a href="progress.html">Progress</a>
+                <a href="reports.html">Reports</a>
+            </div>
+        </div>
+        <div class="nav-right">
+            <!-- Active Bell Icon with Notification Badge -->
+            <button class="icon-btn active" onclick="window.location.href='notification.html'">
+                <i class="fa-regular fa-bell"></i>
+                <span class="notification-badge" id="badgeCount">2</span>
+            </button>
+            <button class="icon-btn" onclick="window.location.href='settings.html'"><i class="fa-solid fa-gear"></i></button>
+            <div class="user-avatar" onclick="window.location.href='achievements.html'">W</div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        
+        <div class="notifications-card fade-in delay-1">
+            
+            <!-- Header Area -->
+            <div class="notif-header-area">
+                <div class="notif-title-row">
+                    <div class="notif-title">
+                        <h1>Notifications</h1>
+                        <p>Stay updated with your health and fitness progress.</p>
+                    </div>
+                    <button class="btn-mark-read" onclick="markAllRead()">Mark all as read</button>
+                </div>
+
+                <!-- Tabs -->
+                <div class="notif-tabs">
+                    <button class="tab active">All</button>
+                    <button class="tab">Reminders</button>
+                    <button class="tab">Achievements</button>
+                    <button class="tab">System</button>
+                </div>
+            </div>
+
+            <!-- List -->
+            <div class="notif-list">
+                
+                <!-- Unread Notification 1 -->
+                <div class="notif-item unread fade-in delay-1">
+                    <div class="notif-icon icon-blue">
+                        <i class="fa-solid fa-droplet"></i>
+                    </div>
+                    <div class="notif-content">
+                        <h4>Hydration Reminder</h4>
+                        <p>Time to hydrate! You are 2 glasses behind your daily water goal.</p>
+                    </div>
+                    <div class="notif-time">10 Mins Ago</div>
+                </div>
+
+                <!-- Unread Notification 2 -->
+                <div class="notif-item unread fade-in delay-2">
+                    <div class="notif-icon icon-green">
+                        <i class="fa-solid fa-bowl-food"></i>
+                    </div>
+                    <div class="notif-content">
+                        <h4>Upcoming: Lunch</h4>
+                        <p>Your personalized meal plan suggests 650 kcal for lunch. Log your meal now.</p>
+                    </div>
+                    <div class="notif-time">1 Hour Ago</div>
+                </div>
+
+                <!-- Read Notification 1 -->
+                <div class="notif-item fade-in delay-3">
+                    <div class="notif-icon icon-gold">
+                        <i class="fa-solid fa-trophy"></i>
+                    </div>
+                    <div class="notif-content">
+                        <h4>5-Day Streak!</h4>
+                        <p>Incredible work! You've hit your protein target 5 days in a row. Keep the momentum going.</p>
+                    </div>
+                    <div class="notif-time">Yesterday</div>
+                </div>
+
+                <!-- Read Notification 2 -->
+                <div class="notif-item fade-in delay-3">
+                    <div class="notif-icon icon-gray">
+                        <i class="fa-solid fa-dumbbell"></i>
+                    </div>
+                    <div class="notif-content">
+                        <h4>Workout Plan Updated</h4>
+                        <p>Based on your recent progress, your weekly workout intensity has been optimized.</p>
+                    </div>
+                    <div class="notif-time">2 Days Ago</div>
+                </div>
+
+                <!-- Read Notification 3 -->
+                <div class="notif-item fade-in delay-4">
+                    <div class="notif-icon icon-gray">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                    <div class="notif-content">
+                        <h4>System Update</h4>
+                        <p>Your Weekly Progress Report for Oct 15 - Oct 21 is ready for review.</p>
+                    </div>
+                    <div class="notif-time">Oct 21</div>
+                </div>
+
+            </div>
+
+            <!-- Footer -->
+            <div class="notif-footer fade-in delay-4">
+                <button class="btn-view-all">View Older Notifications</button>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Scripts -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // Trigger entrance animations
+            setTimeout(() => {
+                const elements = document.querySelectorAll('.fade-in');
+                elements.forEach(el => el.classList.add('visible'));
+            }, 100);
+
+            // Tab Switching Logic
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    // In a real app, you would filter the list here
+                });
+            });
+        });
+
+        // Mark All As Read Logic
+        function markAllRead() {
+            const unreadItems = document.querySelectorAll('.notif-item.unread');
+            unreadItems.forEach(item => {
+                item.classList.remove('unread');
+            });
+            
+            // Hide the badge on the navbar
+            const badge = document.getElementById('badgeCount');
+            if (badge) {
+                badge.style.display = 'none';
+            }
+        }
+    </script>
+
+</body>
+</html>

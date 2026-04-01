@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Onboarding - Smart Diet & Fitness</title>
+    
+    <!-- Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            /* Color Palette */
+            --bg-body: #f4f7fb;
+            --text-dark: #1b3679;
+            --text-medium: #4a6aa6;
+            --text-light: #8ca7db;
+            --primary-blue: #3d7bf4;
+            --primary-blue-hover: #2960cc;
+            --input-bg: #f0f5ff;
+            --bg-right: #ffffff;
+            --border-light: #e5edf9;
+            
+            /* Gradients */
+            --btn-gradient: linear-gradient(135deg, #4d8df5 0%, #3470e8 100%);
+            --btn-gradient-hover: linear-gradient(135deg, #3d7bf4 0%, #2056c7 100%);
+            --image-gradient: linear-gradient(to bottom, #d2e4fd 0%, #f1dcfa 45%, #60abff 75%, #1d6ed8 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: var(--bg-body);
+            padding: 2rem;
+        }
+
+        /* --- Animations --- */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(15px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .delay-1 { transition-delay: 0.1s; }
+        .delay-2 { transition-delay: 0.2s; }
+        .delay-3 { transition-delay: 0.3s; }
+        .delay-4 { transition-delay: 0.4s; }
+
+        /* --- Layout --- */
+        .onboarding-container {
+            display: flex;
+            width: 100%;
+            max-width: 1100px;
+            background-color: var(--bg-right);
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(27, 54, 121, 0.08);
+            overflow: hidden;
+            min-height: 850px;
+        }
+
+        /* --- Left Image Panel --- */
+        .image-panel {
+            width: 35%;
+            background: var(--image-gradient);
+            padding: 4rem 3rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            position: relative;
+        }
+
+        .image-panel::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,100 C30,80 70,90 100,60 L100,100 Z" fill="rgba(255,255,255,0.1)"/></svg>') no-repeat bottom;
+            background-size: cover;
+        }
+
+        .image-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .image-content h2 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #ffffff;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+            letter-spacing: -0.5px;
+        }
+
+        .image-content p {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.6;
+        }
+
+        /* --- Right Form Panel --- */
+        .form-panel {
+            width: 65%;
+            padding: 4rem 5rem;
+            overflow-y: auto;
+        }
+
+        /* Header & Progress */
+        .step-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 1rem;
+        }
+
+        .header-left .subtitle {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .header-left h1 {
+            font-size: 2rem;
+            color: var(--text-dark);
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .header-right {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--primary-blue);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background-color: var(--input-bg);
+            border-radius: 10px;
+            margin-bottom: 3rem;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 33.33%;
+            background-color: var(--primary-blue);
+            border-radius: 10px;
+        }
+
+        /* Section Titles */
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 1.5rem;
+            margin-top: 2.5rem;
+        }
+
+        /* Personal Details Grid */
+        .details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .input-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .input-wrapper label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .inline-input {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.8rem 1rem;
+            border-radius: 12px;
+            background-color: var(--bg-right);
+            transition: all 0.3s ease;
+        }
+
+        .inline-input input, .inline-input select {
+            border: none;
+            outline: none;
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-medium);
+            background: transparent;
+            width: 100%;
+            cursor: pointer;
+        }
+        
+        .inline-input select {
+            appearance: none;
+        }
+
+        .inline-input span, .inline-input i {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-left: 0.5rem;
+        }
+
+        /* Activity Level Cards */
+        .activity-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+
+        .activity-card {
+            background-color: var(--input-bg);
+            border-radius: 16px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .activity-card i {
+            font-size: 1.5rem;
+            color: var(--primary-blue);
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .activity-card h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .activity-card p {
+            font-size: 0.8rem;
+            color: var(--text-medium);
+            line-height: 1.4;
+        }
+
+        .activity-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(61, 123, 244, 0.1);
+        }
+
+        .activity-card.active {
+            background-color: var(--primary-blue);
+            box-shadow: 0 10px 25px rgba(61, 123, 244, 0.3);
+        }
+
+        .activity-card.active i,
+        .activity-card.active h4,
+        .activity-card.active p {
+            color: #ffffff;
+        }
+
+        /* Health Goals Pills */
+        .goals-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .goal-pill {
+            padding: 0.8rem 1.5rem;
+            background-color: var(--input-bg);
+            color: var(--primary-blue);
+            font-weight: 600;
+            font-size: 0.9rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .goal-pill:hover {
+            background-color: #dbe7ff;
+        }
+
+        .goal-pill.active {
+            background-color: var(--primary-blue);
+            color: #ffffff;
+            box-shadow: 0 4px 15px rgba(61, 123, 244, 0.3);
+        }
+
+        /* Divider */
+        .divider {
+            height: 1px;
+            background-color: var(--border-light);
+            margin: 2.5rem 0;
+        }
+
+        /* Footer Actions */
+        .actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+        }
+
+        .btn-back {
+            color: var(--primary-blue);
+            background: none;
+            border: none;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: color 0.3s ease;
+        }
+
+        .btn-back:hover {
+            color: var(--text-dark);
+        }
+
+        .btn-next {
+            padding: 1rem 2rem;
+            border: none;
+            background: var(--btn-gradient);
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 15px rgba(61, 123, 244, 0.3);
+            transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .btn-next:hover {
+            background: var(--btn-gradient-hover);
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(61, 123, 244, 0.4);
+            transform: translateY(-2px);
+        }
+
+        /* BMI Calculator Section */
+        .bmi-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+
+        .bmi-input-wrapper label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .bmi-input {
+            width: 100%;
+            padding: 1rem;
+            background-color: var(--input-bg);
+            border: 2px solid transparent;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text-dark);
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .bmi-input:focus {
+            border-color: var(--primary-blue);
+            background-color: #fff;
+        }
+
+        .bmi-input:read-only {
+            background-color: var(--border-light);
+            color: var(--text-medium);
+            font-weight: 600;
+        }
+
+        /* --- Responsive Design --- */
+        @media (max-width: 950px) {
+            .onboarding-container {
+                flex-direction: column;
+            }
+            .image-panel {
+                width: 100%;
+                padding: 3rem 2rem;
+                min-height: 250px;
+            }
+            .form-panel {
+                width: 100%;
+                padding: 2rem;
+            }
+            .details-grid, .activity-cards, .bmi-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="onboarding-container">
+        
+        <!-- Left Image Panel -->
+        <div class="image-panel">
+            <div class="image-content fade-in">
+                <h2>Welcome to Your Fitness Journey</h2>
+                <p>Personalize your experience for smarter nutrition and workouts.</p>
+            </div>
+        </div>
+
+        <!-- Right Form Panel -->
+        <div class="form-panel">
+            
+            <div class="step-header fade-in">
+                <div class="header-left">
+                    <span class="subtitle">Onboarding</span>
+                    <h1>Let's build your profile</h1>
+                </div>
+                <div class="header-right">Step 1 of 3</div>
+            </div>
+
+            <div class="progress-bar fade-in">
+                <div class="progress-fill"></div>
+            </div>
+
+            <!-- Personal Details -->
+            <h3 class="section-title fade-in delay-1">Personal Details</h3>
+            <div class="details-grid fade-in delay-1">
+                <div class="input-wrapper">
+                    <label>Age</label>
+                    <div class="inline-input">
+                        <input type="number" placeholder="25">
+                        <span>years</span>
+                    </div>
+                </div>
+                <div class="input-wrapper">
+                    <label>Gender</label>
+                    <div class="inline-input">
+                        <select>
+                            <option value="" disabled selected>Select Gender</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="other">Other</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                </div>
+                <div class="input-wrapper">
+                    <label>Weight</label>
+                    <div class="inline-input">
+                        <input type="number" placeholder="70">
+                        <span>kg</span>
+                    </div>
+                </div>
+                <div class="input-wrapper">
+                    <label>Height</label>
+                    <div class="inline-input">
+                        <input type="number" placeholder="175">
+                        <span>cm</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity Level -->
+            <h3 class="section-title fade-in delay-2">Activity Level</h3>
+            <div class="activity-cards fade-in delay-2">
+                <div class="activity-card" onclick="selectActivity(this)">
+                    <i class="fa-solid fa-couch"></i>
+                    <h4>Sedentary</h4>
+                    <p>Office job, little to no exercise.</p>
+                </div>
+                <div class="activity-card active" onclick="selectActivity(this)">
+                    <i class="fa-solid fa-person-running"></i>
+                    <h4>Active</h4>
+                    <p>Exercise 3-5 times a week regularly.</p>
+                </div>
+                <div class="activity-card" onclick="selectActivity(this)">
+                    <i class="fa-solid fa-dumbbell"></i>
+                    <h4>Elite</h4>
+                    <p>Daily intense training or physical labor.</p>
+                </div>
+            </div>
+
+            <!-- Health Goals -->
+            <h3 class="section-title fade-in delay-3">Health Goals</h3>
+            <div class="goals-container fade-in delay-3">
+                <div class="goal-pill" onclick="selectGoal(this)">Weight Loss</div>
+                <div class="goal-pill active" onclick="selectGoal(this)">Muscle Gain</div>
+                <div class="goal-pill" onclick="selectGoal(this)">Endurance</div>
+                <div class="goal-pill" onclick="selectGoal(this)">Maintenance</div>
+            </div>
+
+            <div class="divider fade-in delay-3"></div>
+
+            <!-- Footer Actions -->
+            <div class="actions fade-in delay-4">
+                <button class="btn-back">
+                    <i class="fa-solid fa-arrow-left"></i> Back
+                </button>
+                <button class="btn-next" onclick="window.location.href='onboarding-step-2.html'">
+                    Continue to Step 2 <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+
+            <!-- BMI Calculator -->
+            <h3 class="section-title fade-in delay-4" style="font-size: 1rem;">BMI Calculator</h3>
+            <div class="bmi-container fade-in delay-4">
+                <div class="bmi-input-wrapper">
+                    <label>Weight (kg)</label>
+                    <input type="number" id="bmi-weight" class="bmi-input" placeholder="e.g. 70" oninput="calculateBMI()">
+                </div>
+                <div class="bmi-input-wrapper">
+                    <label>Height (cm)</label>
+                    <input type="number" id="bmi-height" class="bmi-input" placeholder="e.g. 175" oninput="calculateBMI()">
+                </div>
+                <div class="bmi-input-wrapper">
+                    <label>BMI</label>
+                    <input type="text" id="bmi-result" class="bmi-input" placeholder="--" readonly>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- JavaScript Interactions -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // Entrance Animations
+            setTimeout(() => {
+                const elements = document.querySelectorAll('.fade-in');
+                elements.forEach(el => {
+                    el.classList.add('visible');
+                });
+            }, 100);
+        });
+
+        // Activity Card Selection
+        function selectActivity(selectedCard) {
+            const cards = document.querySelectorAll('.activity-card');
+            cards.forEach(card => card.classList.remove('active'));
+            selectedCard.classList.add('active');
+        }
+
+        // Health Goal Selection
+        function selectGoal(selectedPill) {
+            const pills = document.querySelectorAll('.goal-pill');
+            pills.forEach(pill => pill.classList.remove('active'));
+            selectedPill.classList.add('active');
+        }
+
+        // Auto BMI Calculator
+        function calculateBMI() {
+            const weightInput = document.getElementById('bmi-weight').value;
+            const heightInput = document.getElementById('bmi-height').value;
+            const resultBox = document.getElementById('bmi-result');
+
+            if (weightInput && heightInput && heightInput > 0) {
+                const heightInMeters = heightInput / 100;
+                const bmi = (weightInput / (heightInMeters * heightInMeters)).toFixed(1);
+                resultBox.value = bmi;
+            } else {
+                resultBox.value = '';
+            }
+        }
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Smart Diet & Fitness</title>
+    
+    <!-- Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            /* Established Color Palette */
+            --bg-body: #f4f7fb;
+            --text-dark: #1b3679;
+            --text-medium: #4a6aa6;
+            --text-light: #8ca7db;
+            --primary-blue: #3d7bf4;
+            --primary-blue-hover: #2960cc;
+            --input-bg: #f0f5ff;
+            --bg-right: #ffffff;
+            --border-light: #e5edf9;
+            --danger-red: #ef4444;
+            --danger-bg: #fee2e2;
+            
+            /* Gradients */
+            --btn-gradient: linear-gradient(135deg, #4d8df5 0%, #3470e8 100%);
+            --btn-gradient-hover: linear-gradient(135deg, #3d7bf4 0%, #2056c7 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* --- Animations --- */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .delay-1 { transition-delay: 0.1s; }
+        .delay-2 { transition-delay: 0.2s; }
+        .delay-3 { transition-delay: 0.3s; }
+        .delay-4 { transition-delay: 0.4s; }
+
+        /* --- Navbar --- */
+        .navbar {
+            background-color: var(--bg-right);
+            padding: 1rem 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 20px rgba(27, 54, 121, 0.04);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 3rem;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-medium);
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: color 0.3s ease;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid transparent;
+        }
+
+        .nav-links a:hover { color: var(--primary-blue); }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            color: var(--text-medium);
+            cursor: pointer;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+
+        .icon-btn:hover, .icon-btn.active { 
+            color: var(--primary-blue); 
+        }
+
+        .icon-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background-color: var(--primary-blue);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #fde047;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #b45309;
+            font-weight: 700;
+            border: 2px solid var(--border-light);
+            cursor: pointer;
+        }
+
+        /* --- Settings Layout --- */
+        .settings-container {
+            padding: 3rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            flex: 1;
+            display: flex;
+            gap: 3rem;
+            align-items: flex-start;
+        }
+
+        /* --- Sidebar Navigation --- */
+        .settings-sidebar {
+            width: 250px;
+            flex-shrink: 0;
+        }
+
+        .sidebar-header {
+            margin-bottom: 2rem;
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.2rem;
+            letter-spacing: -0.5px;
+        }
+
+        .sidebar-header p {
+            font-size: 0.85rem;
+            color: var(--text-medium);
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .sidebar-menu li a {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.9rem 1.2rem;
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text-medium);
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-menu li a i {
+            font-size: 1.1rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        .sidebar-menu li a:hover {
+            color: var(--primary-blue);
+            background-color: var(--input-bg);
+        }
+
+        .sidebar-menu li a.active {
+            background-color: var(--bg-right);
+            color: var(--primary-blue);
+            box-shadow: 0 4px 15px rgba(27, 54, 121, 0.05);
+        }
+
+        .sidebar-footer-menu {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            border-top: 1px dashed var(--border-light);
+            padding-top: 1.5rem;
+        }
+
+        .btn-logout {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.9rem 1.2rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-light);
+            background-color: transparent;
+            color: var(--danger-red);
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .btn-logout:hover {
+            background-color: var(--danger-bg);
+            border-color: var(--danger-red);
+        }
+
+        .btn-delete {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.9rem 1.2rem;
+            border-radius: 12px;
+            border: none;
+            background-color: transparent;
+            color: var(--text-light);
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .btn-delete:hover {
+            color: var(--danger-red);
+        }
+
+        /* --- Main Content Area --- */
+        .settings-content {
+            flex: 1;
+            background-color: var(--bg-right);
+            border-radius: 24px;
+            padding: 3rem;
+            box-shadow: 0 10px 30px rgba(27, 54, 121, 0.04);
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 1.5rem;
+        }
+
+        /* Input Grid */
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .input-group label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-medium);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 1.2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary-blue);
+            font-size: 1.1rem;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 1rem 1rem 1rem 3.2rem;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            background-color: var(--input-bg);
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text-dark);
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .input-wrapper input:focus {
+            border-color: var(--primary-blue);
+            background-color: #fff;
+            box-shadow: 0 4px 12px rgba(61, 123, 244, 0.1);
+        }
+
+        /* Preferences Row */
+        .preference-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.2rem 1.5rem;
+            background-color: var(--input-bg);
+            border-radius: 16px;
+            margin-bottom: 1rem;
+        }
+
+        .pref-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .pref-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background-color: var(--bg-right);
+            color: var(--primary-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 10px rgba(27, 54, 121, 0.05);
+        }
+
+        .pref-text h4 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 0.1rem;
+        }
+
+        .pref-text p {
+            font-size: 0.8rem;
+            color: var(--text-medium);
+        }
+
+        /* Custom Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 46px;
+            height: 26px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--text-light);
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary-blue);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+
+        /* Theme Selection */
+        .theme-selector {
+            display: flex;
+            background-color: var(--input-bg);
+            padding: 0.5rem;
+            border-radius: 12px;
+            gap: 0.5rem;
+            width: fit-content;
+            margin-bottom: 3rem;
+        }
+
+        .theme-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.8rem 1.5rem;
+            border: none;
+            background: transparent;
+            color: var(--text-medium);
+            font-size: 0.9rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .theme-btn:hover {
+            color: var(--text-dark);
+        }
+
+        .theme-btn.active {
+            background-color: var(--bg-right);
+            color: var(--primary-blue);
+            box-shadow: 0 4px 10px rgba(27, 54, 121, 0.05);
+        }
+
+        /* Footer Actions */
+        .settings-footer {
+            display: flex;
+            justify-content: flex-end;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .btn-save {
+            padding: 1rem 2rem;
+            border: none;
+            background: var(--btn-gradient);
+            color: white;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(61, 123, 244, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .btn-save:hover {
+            background: var(--btn-gradient-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(61, 123, 244, 0.4);
+        }
+
+        .btn-save:active {
+            transform: translateY(0);
+        }
+
+        /* --- Responsive Design --- */
+        @media (max-width: 900px) {
+            .settings-container {
+                flex-direction: column;
+            }
+            .settings-sidebar {
+                width: 100%;
+            }
+            .sidebar-menu {
+                flex-direction: row;
+                flex-wrap: wrap;
+                margin-bottom: 1.5rem;
+            }
+            .sidebar-menu li {
+                flex: 1;
+                min-width: 140px;
+            }
+            .sidebar-header {
+                text-align: center;
+            }
+            .input-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .settings-content { padding: 2rem 1.5rem; }
+            .theme-selector { flex-direction: column; width: 100%; }
+            .theme-btn { justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar fade-in">
+        <div class="nav-left">
+            <div class="logo">
+                <i class="fa-solid fa-leaf"></i> Smart Diet & Fitness
+            </div>
+            <div class="nav-links">
+                <a href="dashboard.html">Dashboard</a>
+                <a href="nutrition.html">Nutrition</a>
+                <a href="workouts.html">Workouts</a>
+                <a href="progress.html">Progress</a>
+                <a href="reports.html">Reports</a>
+            </div>
+        </div>
+        <div class="nav-right">
+            <button class="icon-btn" onclick="window.location.href='notification.html'"><i class="fa-regular fa-bell"></i></button>
+            <button class="icon-btn active" onclick="window.location.href='settings.html'"><i class="fa-solid fa-gear"></i></button>
+            <div class="user-avatar" onclick="window.location.href='achievements.html'">W</div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="settings-container">
+        
+        <!-- Sidebar Navigation -->
+        <aside class="settings-sidebar fade-in delay-1">
+            <div class="sidebar-header">
+                <h2>Settings</h2>
+                <p>Manage your account</p>
+            </div>
+
+            <ul class="sidebar-menu">
+                <li><a href="#" class="active"><i class="fa-regular fa-user"></i> Profile</a></li>
+                <li><a href="#"><i class="fa-solid fa-shield-halved"></i> Privacy & Security</a></li>
+                <li><a href="#"><i class="fa-regular fa-bell"></i> Notifications</a></li>
+                <li><a href="#"><i class="fa-solid fa-link"></i> Integrations</a></li>
+                <li><a href="#"><i class="fa-solid fa-palette"></i> Appearance</a></li>
+                <li><a href="#"><i class="fa-regular fa-circle-question"></i> Support</a></li>
+            </ul>
+
+            <ul class="sidebar-footer-menu">
+                <li>
+                    <button class="btn-logout" onclick="window.location.href='login.html'">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i> Log Out
+                    </button>
+                </li>
+                <li>
+                    <button class="btn-delete">
+                        <i class="fa-regular fa-trash-can"></i> Delete Account
+                    </button>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- Main Content Card -->
+        <section class="settings-content fade-in delay-2">
+            
+            <!-- Profile Settings -->
+            <h3 class="section-title">Profile Settings</h3>
+            <div class="input-grid">
+                <div class="input-group">
+                    <label>Full Name</label>
+                    <div class="input-wrapper">
+                        <i class="fa-regular fa-user"></i>
+                        <input type="text" value="Emaan Fatima">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Email Address</label>
+                    <div class="input-wrapper">
+                        <i class="fa-regular fa-envelope"></i>
+                        <input type="email" value="fatimabutt@gmail.com" readonly style="color: var(--text-medium); background-color: var(--border-light); cursor: not-allowed;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notifications / Preferences (Adapted for Diet & Fitness Project) -->
+            <h3 class="section-title" style="margin-top: 1rem;">Preferences & Reminders</h3>
+            
+            <div class="preference-row">
+                <div class="pref-info">
+                    <div class="pref-icon"><i class="fa-solid fa-utensils"></i></div>
+                    <div class="pref-text">
+                        <h4>Meal Reminders</h4>
+                        <p>Receive push notifications for breakfast, lunch, and dinner.</p>
+                    </div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="preference-row">
+                <div class="pref-info">
+                    <div class="pref-icon"><i class="fa-solid fa-droplet"></i></div>
+                    <div class="pref-text">
+                        <h4>Hydration Alerts</h4>
+                        <p>Get reminded every 2 hours to drink water and log your intake.</p>
+                    </div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="preference-row">
+                <div class="pref-info">
+                    <div class="pref-icon"><i class="fa-solid fa-share-nodes"></i></div>
+                    <div class="pref-text">
+                        <h4>Public Progress Sharing</h4>
+                        <p>Allow community friends to see your weekly achievements.</p>
+                    </div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <!-- Theme Selection -->
+            <h3 class="section-title" style="margin-top: 2.5rem;">Theme Selection</h3>
+            <div class="theme-selector">
+                <button class="theme-btn active">
+                    <i class="fa-regular fa-sun"></i> Light
+                </button>
+                <button class="theme-btn">
+                    <i class="fa-regular fa-moon"></i> Dark
+                </button>
+                <button class="theme-btn">
+                    <i class="fa-solid fa-desktop"></i> System Default
+                </button>
+            </div>
+
+            <!-- Footer Actions -->
+            <div class="settings-footer">
+                <button class="btn-save">Save Changes</button>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Scripts -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // Trigger entrance animations
+            setTimeout(() => {
+                const elements = document.querySelectorAll('.fade-in');
+                elements.forEach(el => el.classList.add('visible'));
+            }, 100);
+
+            // Handle Theme Selection UI toggling
+            const themeBtns = document.querySelectorAll('.theme-btn');
+            themeBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    themeBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                });
+            });
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Smart Diet & Fitness</title>
+    
+    <!-- Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            /* Color Palette from previous designs */
+            --bg-body: #f4f7fb;
+            --text-dark: #1b3679;
+            --text-medium: #4a6aa6;
+            --text-light: #8ca7db;
+            --primary-blue: #3d7bf4;
+            --primary-blue-hover: #2960cc;
+            --input-bg: #f0f5ff;
+            --bg-right: #ffffff;
+            --border-light: #e5edf9;
+            
+            /* Gradients */
+            --btn-gradient: linear-gradient(135deg, #4d8df5 0%, #3470e8 100%);
+            --btn-gradient-hover: linear-gradient(135deg, #3d7bf4 0%, #2056c7 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-dark);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* --- Animations --- */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .delay-1 { transition-delay: 0.1s; }
+        .delay-2 { transition-delay: 0.2s; }
+        .delay-3 { transition-delay: 0.3s; }
+        .delay-4 { transition-delay: 0.4s; }
+
+        /* --- Navbar --- */
+        .navbar {
+            background-color: var(--bg-right);
+            padding: 1rem 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 20px rgba(27, 54, 121, 0.04);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 3rem;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-medium);
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: color 0.3s ease;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid transparent;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-blue);
+        }
+
+        .nav-links a.active {
+            color: var(--primary-blue);
+            border-bottom: 2px solid var(--primary-blue);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .search-bar {
+            position: relative;
+        }
+
+        .search-bar i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+        }
+
+        .search-bar input {
+            background-color: var(--input-bg);
+            border: none;
+            padding: 0.7rem 1rem 0.7rem 2.5rem;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            outline: none;
+            width: 250px;
+            transition: all 0.3s ease;
+        }
+
+        .search-bar input:focus {
+            background-color: #fff;
+            box-shadow: 0 0 0 2px var(--primary-blue);
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            color: var(--text-medium);
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .icon-btn:hover {
+            color: var(--primary-blue);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #fde047;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #b45309;
+            font-weight: 700;
+            border: 2px solid var(--border-light);
+            cursor: pointer;
+        }
+
+        /* --- Main Dashboard Content --- */
+        .dashboard-container {
+            padding: 3rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            margin-bottom: 2.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-header p {
+            color: var(--text-medium);
+            font-size: 1rem;
+        }
+
+        /* --- Grid Layout --- */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+        }
+
+        /* Card Base Styles */
+        .card {
+            background-color: var(--bg-right);
+            border-radius: 24px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(27, 54, 121, 0.04);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .card-wide {
+            grid-column: span 2;
+        }
+
+        .badge {
+            background-color: var(--input-bg);
+            color: var(--primary-blue);
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 0.4rem 0.8rem;
+            border-radius: 50px;
+            display: inline-block;
+            margin-bottom: 1rem;
+            letter-spacing: 0.5px;
+            width: fit-content;
+        }
+
+        /* --- Daily Calorie Card (Wide) --- */
+        .calorie-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 100%;
+        }
+
+        .calorie-info {
+            flex: 1;
+            padding-right: 2rem;
+        }
+
+        .calorie-info h2 {
+            font-size: 1.6rem;
+            margin-bottom: 1rem;
+        }
+
+        .calorie-info p {
+            color: var(--text-medium);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .macros-grid {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .macro-box {
+            background-color: var(--bg-body);
+            padding: 1rem;
+            border-radius: 16px;
+            flex: 1;
+        }
+
+        .macro-box span {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-medium);
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .macro-box strong {
+            font-size: 1.25rem;
+            color: var(--primary-blue);
+        }
+
+        /* Circular Progress SVG */
+        .chart-container {
+            width: 180px;
+            height: 180px;
+            position: relative;
+        }
+
+        .circular-chart {
+            display: block;
+            margin: 0 auto;
+            max-width: 100%;
+            max-height: 250px;
+        }
+
+        .circle-bg {
+            fill: none;
+            stroke: var(--input-bg);
+            stroke-width: 3.8;
+        }
+
+        .circle {
+            fill: none;
+            stroke-width: 3.8;
+            stroke-linecap: round;
+            stroke: var(--primary-blue);
+            stroke-dasharray: 0, 100;
+            transition: stroke-dasharray 1.5s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .chart-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .chart-text .val {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            display: block;
+            line-height: 1;
+        }
+
+        .chart-text .lbl {
+            font-size: 0.8rem;
+            color: var(--text-medium);
+            font-weight: 500;
+        }
+
+        /* --- Weight Trend Card --- */
+        .weight-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 2rem;
+        }
+
+        .weight-header h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .weight-header p {
+            font-size: 0.8rem;
+            color: var(--text-medium);
+        }
+
+        .weight-chart-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+
+        .chart-x-axis {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1rem;
+            padding: 0 0.5rem;
+        }
+
+        .chart-x-axis span {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-light);
+        }
+
+        /* --- Upcoming Meal Card --- */
+        .meal-card {
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .meal-img {
+            height: 180px;
+            background: url('https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80') center/cover;
+            position: relative;
+        }
+
+        .meal-img .badge {
+            position: absolute;
+            top: 1.5rem;
+            left: 1.5rem;
+            background-color: rgba(255, 255, 255, 0.9);
+            margin: 0;
+        }
+
+        .meal-info {
+            padding: 1.5rem;
+        }
+
+        .meal-info h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .meal-info p {
+            font-size: 0.9rem;
+            color: var(--text-medium);
+            line-height: 1.5;
+            margin-bottom: 1.5rem;
+        }
+
+        .meal-tags {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .meal-tag {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            background-color: var(--bg-body);
+            padding: 0.5rem 0.8rem;
+            border-radius: 8px;
+        }
+
+        .meal-tag i { color: var(--primary-blue); }
+
+        /* --- Adherence Card --- */
+        .card-title {
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            background-color: var(--bg-body);
+            border-radius: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        .task-item:hover {
+            background-color: var(--input-bg);
+        }
+
+        .task-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        /* Custom Checkbox */
+        .custom-checkbox {
+            appearance: none;
+            width: 22px;
+            height: 22px;
+            border: 2px solid var(--text-light);
+            border-radius: 6px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .custom-checkbox:checked {
+            background-color: var(--primary-blue);
+            border-color: var(--primary-blue);
+        }
+
+        .custom-checkbox:checked::after {
+            content: '\f00c';
+            font-family: 'FontAwesome';
+            color: white;
+            font-size: 12px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .task-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: color 0.3s;
+        }
+
+        .task-item input:checked ~ .task-name {
+            color: var(--text-light);
+            text-decoration: line-through;
+        }
+
+        .task-status {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-completed { color: var(--primary-blue); }
+        .status-pending { color: var(--text-light); }
+        .status-warn { color: #f59e0b; }
+
+        /* --- Hydration Card --- */
+        .hydration-card {
+            background-color: var(--input-bg);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .drop-icon {
+            font-size: 2rem;
+            color: var(--primary-blue);
+            margin-bottom: 1rem;
+        }
+
+        .hydration-info h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .hydration-info p {
+            font-size: 0.85rem;
+            color: var(--text-medium);
+            margin-bottom: 1.5rem;
+        }
+
+        .water-pills {
+            display: flex;
+            gap: 0.4rem;
+            margin-bottom: 2rem;
+        }
+
+        .water-pill {
+            width: 12px;
+            height: 35px;
+            border-radius: 10px;
+            background-color: var(--border-light);
+            transition: background-color 0.3s ease;
+        }
+
+        .water-pill.filled {
+            background-color: var(--primary-blue);
+        }
+
+        /* Super Smooth Button styles (Match from previous) */
+        .btn-add {
+            width: 100%;
+            padding: 1rem;
+            border: none;
+            background: var(--btn-gradient);
+            color: white;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 50px; /* Pilled initially */
+            box-shadow: 0 4px 15px rgba(61, 123, 244, 0.3);
+            transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .btn-add:hover {
+            background: var(--btn-gradient-hover);
+            border-radius: 12px; /* Morphs to rounded rectangle */
+            box-shadow: 0 8px 25px rgba(61, 123, 244, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .btn-add:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 10px rgba(61, 123, 244, 0.3);
+        }
+
+        /* --- FAB --- */
+        .fab {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--btn-gradient);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 10px 25px rgba(61, 123, 244, 0.4);
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .fab:hover {
+            transform: scale(1.1) rotate(90deg);
+        }
+
+        /* --- Responsive Design --- */
+        @media (max-width: 1100px) {
+            .grid-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .card-wide {
+                grid-column: span 2;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links, .search-bar { display: none; }
+            .grid-container {
+                grid-template-columns: 1fr;
+            }
+            .card-wide {
+                grid-column: span 1;
+            }
+            .calorie-content {
+                flex-direction: column;
+                gap: 2rem;
+                text-align: center;
+            }
+            .calorie-info { padding-right: 0; }
+            .dashboard-container { padding: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar fade-in">
+        <div class="nav-left">
+            <div class="logo">
+                <i class="fa-solid fa-leaf"></i> Smart Diet & Fitness
+            </div>
+            <div class="nav-links">
+                <a href="dashboard.html" class="active">Dashboard</a>
+                <a href="nutrition.html">Nutrition</a>
+                <a href="workouts.html">Workouts</a>
+                <a href="progress.html">Progress</a>
+                <a href="reports.html">Reports</a>
+            </div>
+        </div>
+        <div class="nav-right">
+            <div class="search-bar">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" placeholder="Search data...">
+            </div>
+            <button class="icon-btn" onclick="window.location.href='notification.html'"><i class="fa-regular fa-bell"></i></button>
+            <button class="icon-btn" onclick="window.location.href='settings.html'"><i class="fa-solid fa-gear"></i></button>
+            <div class="user-avatar" onclick="window.location.href='achievements.html'">W</div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="dashboard-container">
+        
+        <div class="page-header fade-in delay-1">
+            <h1>Morning, Emaan Fatima</h1>
+            <p>Your personalized diet and fitness overview for today, October 24th.</p>
+        </div>
+
+        <div class="grid-container">
+            
+            <!-- Card 1: Calorie Progress -->
+            <div class="card card-wide fade-in delay-1">
+                <div class="calorie-content">
+                    <div class="calorie-info">
+                        <span class="badge">Nutrition Intake</span>
+                        <h2>Daily Calorie Progress</h2>
+                        <p>You have consumed 84% of your daily target. Your metabolic rate is optimal for today's scheduled activity.</p>
+                        
+                        <div class="macros-grid">
+                            <div class="macro-box">
+                                <span>Protein</span>
+                                <strong>142g</strong>
+                            </div>
+                            <div class="macro-box">
+                                <span>Carbs</span>
+                                <strong>210g</strong>
+                            </div>
+                            <div class="macro-box">
+                                <span>Fats</span>
+                                <strong>54g</strong>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <svg viewBox="0 0 36 36" class="circular-chart">
+                            <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                            <path class="circle" id="calorieCircle" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                        </svg>
+                        <div class="chart-text">
+                            <span class="val">1,850</span>
+                            <span class="lbl">of 2,200 kcal</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2: Weight Trend -->
+            <div class="card fade-in delay-2">
+                <div class="weight-header">
+                    <div>
+                        <h3>Weight Trend</h3>
+                        <p>Past 7 days analysis</p>
+                    </div>
+                    <span class="badge" style="background-color: #dbe7ff;">-1.2 kg</span>
+                </div>
+                <div class="weight-chart-wrapper">
+                    <!-- Simple SVG Sparkline Chart -->
+                    <svg viewBox="0 0 100 40" style="width: 100%; height: 100px; overflow: visible;">
+                        <path d="M0,30 C20,28 30,35 50,20 C70,5 80,15 100,5" fill="none" stroke="var(--primary-blue)" stroke-width="3" stroke-linecap="round"/>
+                        <!-- Data Points -->
+                        <circle cx="0" cy="30" r="3" fill="#fff" stroke="var(--primary-blue)" stroke-width="2"/>
+                        <circle cx="50" cy="20" r="3" fill="#fff" stroke="var(--primary-blue)" stroke-width="2"/>
+                        <circle cx="100" cy="5" r="3" fill="#fff" stroke="var(--primary-blue)" stroke-width="2"/>
+                    </svg>
+                    <div class="chart-x-axis">
+                        <span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span><span>SUN</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 3: Upcoming Meal -->
+            <div class="card meal-card fade-in delay-3">
+                <div class="meal-img">
+                    <span class="badge">Upcoming: Lunch</span>
+                </div>
+                <div class="meal-info">
+                    <h3>Harvest Quinoa Power Bowl</h3>
+                    <p>Prepared for metabolic boost and sustained energy levels through the afternoon.</p>
+                    <div class="meal-tags">
+                        <div class="meal-tag"><i class="fa-regular fa-clock"></i> 15 min</div>
+                        <div class="meal-tag"><i class="fa-solid fa-bolt"></i> 420 kcal</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 4: Daily Adherence -->
+            <div class="card fade-in delay-3">
+                <h3 class="card-title">Daily Adherence</h3>
+                <div class="task-list">
+                    <label class="task-item">
+                        <div class="task-left">
+                            <input type="checkbox" class="custom-checkbox" checked>
+                            <span class="task-name">Morning HIIT Session (30m)</span>
+                        </div>
+                        <span class="task-status status-completed">Completed</span>
+                    </label>
+
+                    <label class="task-item">
+                        <div class="task-left">
+                            <input type="checkbox" class="custom-checkbox">
+                            <span class="task-name">Protein Intake Goal (160g)</span>
+                        </div>
+                        <span class="task-status status-warn">18g Left</span>
+                    </label>
+
+                    <label class="task-item">
+                        <div class="task-left">
+                            <input type="checkbox" class="custom-checkbox">
+                            <span class="task-name">Post-Workout Stretching</span>
+                        </div>
+                        <span class="task-status status-pending">Pending</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Card 5: Hydration Status -->
+            <div class="card hydration-card fade-in delay-4">
+                <div class="hydration-info">
+                    <i class="fa-solid fa-droplet drop-icon"></i>
+                    <h3>Hydration Status</h3>
+                    <p><span id="waterCount">5</span> of 8 glasses consumed</p>
+                </div>
+                
+                <div class="water-pills" id="waterPills">
+                    <div class="water-pill filled"></div>
+                    <div class="water-pill filled"></div>
+                    <div class="water-pill filled"></div>
+                    <div class="water-pill filled"></div>
+                    <div class="water-pill filled"></div>
+                    <div class="water-pill"></div>
+                    <div class="water-pill"></div>
+                    <div class="water-pill"></div>
+                </div>
+
+                <button class="btn-add" onclick="addWater()">Add +250ml</button>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Floating Action Button -->
+    <button class="fab fade-in delay-4" title="Quick Add">
+        <i class="fa-solid fa-plus"></i>
+    </button>
+
+    <!-- Scripts -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // 1. Entrance Animations
+            setTimeout(() => {
+                const elements = document.querySelectorAll('.fade-in');
+                elements.forEach(el => {
+                    el.classList.add('visible');
+                });
+            }, 100);
+
+            // 2. Animate Circular Chart (84%)
+            setTimeout(() => {
+                const circle = document.getElementById('calorieCircle');
+                // Format: "value, 100"
+                circle.style.strokeDasharray = "84, 100";
+            }, 500);
+        });
+
+        // 3. Hydration Tracker Logic
+        let currentGlasses = 5;
+        const maxGlasses = 8;
+
+        function addWater() {
+            if (currentGlasses < maxGlasses) {
+                currentGlasses++;
+                
+                // Update Text
+                document.getElementById('waterCount').innerText = currentGlasses;
+                
+                // Update Pills
+                const pills = document.querySelectorAll('.water-pill');
+                for (let i = 0; i < currentGlasses; i++) {
+                    pills[i].classList.add('filled');
+                }
+            }
+        }
+    </script>
+
+</body>
+</html>

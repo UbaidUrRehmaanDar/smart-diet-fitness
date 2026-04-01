@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Onboarding Step 2 - Smart Diet & Fitness</title>
+    
+    <!-- Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            /* Established Color Palette */
+            --bg-body: #f4f7fb;
+            --text-dark: #1b3679;
+            --text-medium: #4a6aa6;
+            --text-light: #8ca7db;
+            --primary-blue: #3d7bf4;
+            --primary-blue-hover: #2960cc;
+            --input-bg: #f0f5ff;
+            --bg-right: #ffffff;
+            --border-light: #e5edf9;
+            
+            /* Gradients */
+            --btn-gradient: linear-gradient(135deg, #4d8df5 0%, #3470e8 100%);
+            --btn-gradient-hover: linear-gradient(135deg, #3d7bf4 0%, #2056c7 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: var(--bg-body);
+            padding: 2rem;
+            color: var(--text-dark);
+        }
+
+        /* --- Animations --- */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .delay-1 { transition-delay: 0.1s; }
+        .delay-2 { transition-delay: 0.2s; }
+        .delay-3 { transition-delay: 0.3s; }
+        .delay-4 { transition-delay: 0.4s; }
+
+        /* --- Layout --- */
+        .onboarding-card {
+            background-color: var(--bg-right);
+            width: 100%;
+            max-width: 850px;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(27, 54, 121, 0.06);
+            padding: 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* --- Progress Header --- */
+        .progress-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .progress-track {
+            width: 250px;
+            height: 6px;
+            background-color: var(--border-light);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            width: 66.66%; /* Step 2 of 3 */
+            height: 100%;
+            background-color: var(--primary-blue);
+            border-radius: 10px;
+        }
+
+        .step-indicator {
+            position: absolute;
+            right: 0;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* --- Headings --- */
+        .text-center {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .text-center h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            letter-spacing: -0.5px;
+        }
+
+        .text-center p {
+            color: var(--text-medium);
+            font-size: 1.05rem;
+            line-height: 1.5;
+        }
+
+        /* --- Diet Preference Cards --- */
+        .diet-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .diet-card {
+            background-color: var(--bg-right);
+            border: 2px solid var(--border-light);
+            border-radius: 20px;
+            padding: 2.5rem 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .diet-card .icon-wrapper {
+            width: 60px;
+            height: 60px;
+            background-color: var(--input-bg);
+            color: var(--primary-blue);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin: 0 auto 1.5rem auto;
+            transition: all 0.3s ease;
+        }
+
+        .diet-card h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .diet-card p {
+            font-size: 0.85rem;
+            color: var(--text-medium);
+            line-height: 1.4;
+            transition: color 0.3s ease;
+        }
+
+        .diet-card:hover {
+            border-color: var(--primary-blue);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(61, 123, 244, 0.1);
+        }
+
+        /* Active State */
+        .diet-card.active {
+            background-color: var(--primary-blue);
+            border-color: var(--primary-blue);
+            box-shadow: 0 12px 30px rgba(61, 123, 244, 0.3);
+        }
+
+        .diet-card.active .icon-wrapper {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+        }
+
+        .diet-card.active h3, 
+        .diet-card.active p {
+            color: #ffffff;
+        }
+
+        /* --- Split Section (Allergies & Target Weight) --- */
+        .split-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            margin-bottom: 3rem;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+            color: var(--text-dark);
+        }
+
+        /* Pills (Multi-select) */
+        .pills-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+        }
+
+        .pill {
+            padding: 0.7rem 1.2rem;
+            border: 2px solid var(--border-light);
+            border-radius: 50px;
+            color: var(--text-medium);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: transparent;
+        }
+
+        .pill:hover {
+            border-color: var(--primary-blue);
+            color: var(--primary-blue);
+        }
+
+        .pill.active {
+            background-color: var(--input-bg);
+            border-color: var(--primary-blue);
+            color: var(--primary-blue);
+        }
+
+        /* Target Weight Input */
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 1.2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary-blue);
+            font-size: 1.1rem;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 1.1rem 1.2rem 1.1rem 3.5rem;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            background-color: var(--input-bg);
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-dark);
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .input-wrapper input::placeholder {
+            color: var(--input-placeholder);
+        }
+
+        .input-wrapper input:focus {
+            border-color: var(--primary-blue);
+            background-color: #fff;
+            box-shadow: 0 4px 12px rgba(61, 123, 244, 0.1);
+        }
+
+        .input-hint {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            color: var(--text-medium);
+            margin-top: 0.75rem;
+        }
+
+        .input-hint i {
+            color: var(--text-light);
+        }
+
+        /* --- Footer Actions --- */
+        .actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .btn-back {
+            color: var(--primary-blue);
+            background: none;
+            border: none;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: color 0.3s ease;
+        }
+
+        .btn-back:hover {
+            color: var(--text-dark);
+        }
+
+        /* Super Smooth Button styles */
+        .btn-continue {
+            padding: 1rem 2.5rem;
+            border: none;
+            background: var(--btn-gradient);
+            color: white;
+            font-size: 1.05rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 50px; /* Pilled initially */
+            box-shadow: 0 4px 15px rgba(61, 123, 244, 0.3);
+            /* Transition for the shape and color morph */
+            transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-continue:hover {
+            background: var(--btn-gradient-hover);
+            border-radius: 12px; /* Morphs to rounded rectangle */
+            box-shadow: 0 8px 25px rgba(61, 123, 244, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .btn-continue:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 10px rgba(61, 123, 244, 0.3);
+        }
+
+        /* --- Responsive Design --- */
+        @media (max-width: 850px) {
+            .onboarding-card {
+                padding: 3rem 2rem;
+            }
+            .diet-cards {
+                grid-template-columns: 1fr;
+            }
+            .split-section {
+                grid-template-columns: 1fr;
+                gap: 2.5rem;
+            }
+            .step-indicator {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="onboarding-card">
+        
+        <!-- Progress Header -->
+        <div class="progress-header fade-in">
+            <div class="progress-track">
+                <div class="progress-fill"></div>
+            </div>
+            <span class="step-indicator">Step 2 of 3</span>
+        </div>
+
+        <!-- Title -->
+        <div class="text-center fade-in delay-1">
+            <h1>Dietary Habits & Preferences</h1>
+            <p>We’ll use this to generate your personalized daily diet plan.</p>
+        </div>
+
+        <!-- Diet Types (Single Select) -->
+        <div class="diet-cards fade-in delay-2">
+            <div class="diet-card active" onclick="selectDiet(this)">
+                <div class="icon-wrapper"><i class="fa-solid fa-utensils"></i></div>
+                <h3>Standard Diet</h3>
+                <p>No specific restrictions. Includes all food groups for a balanced intake.</p>
+            </div>
+            
+            <div class="diet-card" onclick="selectDiet(this)">
+                <div class="icon-wrapper"><i class="fa-solid fa-leaf"></i></div>
+                <h3>Vegetarian</h3>
+                <p>Plant-based diet. Excludes meat but includes dairy and eggs.</p>
+            </div>
+            
+            <div class="diet-card" onclick="selectDiet(this)">
+                <div class="icon-wrapper"><i class="fa-solid fa-seedling"></i></div>
+                <h3>Vegan</h3>
+                <p>Strictly plant-based. No animal products or by-products.</p>
+            </div>
+        </div>
+
+        <!-- Allergies & Target Weight -->
+        <div class="split-section fade-in delay-3">
+            
+            <!-- Restrictions (Multi-select) -->
+            <div>
+                <h3 class="section-title">Allergies & Restrictions</h3>
+                <div class="pills-group">
+                    <button class="pill" onclick="togglePill(this)">Gluten-Free</button>
+                    <button class="pill" onclick="togglePill(this)">Dairy-Free</button>
+                    <button class="pill" onclick="togglePill(this)">Nut-Free</button>
+                    <button class="pill" onclick="togglePill(this)">Keto</button>
+                    <button class="pill" onclick="togglePill(this)">Paleo</button>
+                    <button class="pill" onclick="togglePill(this)">Halal</button>
+                </div>
+            </div>
+
+            <!-- Target Weight -->
+            <div>
+                <h3 class="section-title">Target Weight (kg)</h3>
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-weight-scale"></i>
+                    <input type="number" placeholder="e.g. 65.0" step="0.1">
+                </div>
+                <div class="input-hint">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <span>Our recommendation engine uses this for BMI projections.</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Bottom Actions -->
+        <div class="actions fade-in delay-4">
+            <button class="btn-back" onclick="history.back()">
+                <i class="fa-solid fa-arrow-left"></i> Back
+            </button>
+            <button class="btn-continue" onclick="window.location.href='onboarding-step-3.html'">
+                Continue <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </div>
+
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // Trigger entrance animations
+            setTimeout(() => {
+                const elements = document.querySelectorAll('.fade-in');
+                elements.forEach(el => el.classList.add('visible'));
+            }, 100);
+        });
+
+        // Handle single selection for Diet Type cards
+        function selectDiet(selectedCard) {
+            const cards = document.querySelectorAll('.diet-card');
+            cards.forEach(card => card.classList.remove('active'));
+            selectedCard.classList.add('active');
+        }
+
+        // Handle multi-selection for Allergy/Restriction pills
+        function togglePill(pill) {
+            pill.classList.toggle('active');
+        }
+    </script>
+
+</body>
+</html>

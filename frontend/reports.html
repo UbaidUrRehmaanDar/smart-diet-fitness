@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - Smart Diet & Fitness</title>
+    
+    <!-- Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            /* Smart Diet & Fitness Color Palette */
+            --bg-body: #f4f7fb;
+            --text-dark: #1b3679;
+            --text-medium: #4a6aa6;
+            --text-light: #8ca7db;
+            --primary-blue: #3d7bf4;
+            --primary-blue-hover: #2960cc;
+            --secondary-blue: #1e40af; 
+            --input-bg: #f0f5ff;
+            --bg-right: #ffffff;
+            --border-light: #e5edf9;
+            --success-green: #10b981;
+            
+            /* Gradients */
+            --btn-gradient: linear-gradient(135deg, #4d8df5 0%, #3470e8 100%);
+            --btn-gradient-hover: linear-gradient(135deg, #3d7bf4 0%, #2056c7 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* --- Animations --- */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .delay-1 { transition-delay: 0.1s; }
+        .delay-2 { transition-delay: 0.2s; }
+        .delay-3 { transition-delay: 0.3s; }
+        .delay-4 { transition-delay: 0.4s; }
+
+        /* --- Navbar --- */
+        .navbar {
+            background-color: var(--bg-right);
+            padding: 1rem 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 20px rgba(27, 54, 121, 0.04);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 3rem;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-medium);
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: color 0.3s ease;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid transparent;
+        }
+
+        .nav-links a:hover { color: var(--primary-blue); }
+        .nav-links a.active {
+            color: var(--primary-blue);
+            border-bottom: 2px solid var(--primary-blue);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            color: var(--text-medium);
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .icon-btn:hover { color: var(--primary-blue); }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #fde047;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #b45309;
+            font-weight: 700;
+            border: 2px solid var(--border-light);
+            cursor: pointer;
+        }
+
+        /* --- Main Content --- */
+        .main-content {
+            padding: 3rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            flex: 1;
+        }
+
+        /* --- Page Header --- */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 2.5rem;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+
+        .header-title .subtitle {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .header-title h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            letter-spacing: -0.5px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .custom-select {
+            appearance: none;
+            background-color: var(--bg-right);
+            border: 2px solid var(--border-light);
+            padding: 0.8rem 2.5rem 0.8rem 1.2rem;
+            border-radius: 50px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            cursor: pointer;
+            outline: none;
+            /* Custom Chevron SVG */
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%234a6aa6%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem top 50%;
+            background-size: 0.65rem auto;
+            transition: all 0.3s ease;
+        }
+
+        .custom-select:hover {
+            border-color: var(--primary-blue);
+        }
+
+        .btn-download {
+            background-color: var(--input-bg);
+            color: var(--primary-blue);
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-download:hover {
+            background-color: var(--primary-blue);
+            color: white;
+        }
+
+        /* --- Dashboard Grids --- */
+        .grid-top {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .grid-bottom {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .card {
+            background-color: var(--bg-right);
+            border-radius: 24px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(27, 54, 121, 0.04);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+            width: 100%;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        /* --- Adherence Score Card --- */
+        .adherence-card {
+            text-align: center;
+            align-items: center;
+        }
+
+        .shield-icon {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            font-size: 1.5rem;
+            color: var(--input-bg);
+        }
+
+        .circular-chart-container {
+            position: relative;
+            width: 160px;
+            height: 160px;
+            margin: 1rem auto 2rem auto;
+        }
+
+        .circular-chart {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .circle-bg {
+            fill: none;
+            stroke: var(--input-bg);
+            stroke-width: 4;
+        }
+
+        .circle-fill {
+            fill: none;
+            stroke: var(--primary-blue);
+            stroke-width: 4;
+            stroke-linecap: round;
+            stroke-dasharray: 0, 100;
+            transition: stroke-dasharray 1.5s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .chart-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .chart-text .val {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            line-height: 1;
+            margin-bottom: 0.2rem;
+        }
+
+        .chart-text .lbl {
+            font-size: 0.75rem;
+            color: var(--text-medium);
+            font-weight: 500;
+        }
+
+        .adherence-card p {
+            font-size: 0.9rem;
+            color: var(--text-medium);
+            line-height: 1.5;
+        }
+
+        /* --- Calorie Balance Card --- */
+        .cal-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 0.5rem;
+        }
+
+        .cal-label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .cal-val {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .bar-bg {
+            width: 100%;
+            height: 12px;
+            background-color: var(--input-bg);
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .bar-fill-light {
+            height: 100%;
+            background-color: #93c5fd;
+            border-radius: 10px;
+            width: 0%;
+            transition: width 1.5s ease-out;
+        }
+
+        .bar-fill-dark {
+            height: 100%;
+            background-color: var(--primary-blue);
+            border-radius: 10px;
+            width: 0%;
+            transition: width 1.5s ease-out;
+        }
+
+        .deficit-box {
+            margin-top: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .deficit-info span {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-medium);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.2rem;
+        }
+
+        .deficit-info strong {
+            font-size: 1.1rem;
+            color: var(--primary-blue);
+        }
+
+        .trend-icon {
+            width: 35px;
+            height: 35px;
+            background-color: var(--input-bg);
+            color: var(--primary-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        /* --- Top Exercise Card --- */
+        .exercise-header {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .ex-icon {
+            width: 50px;
+            height: 50px;
+            background-color: var(--primary-blue);
+            color: white;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .ex-text span {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-medium);
+            margin-bottom: 0.2rem;
+        }
+
+        .ex-text strong {
+            font-size: 1.1rem;
+            color: var(--text-dark);
+        }
+
+        .gain-box {
+            background-color: var(--input-bg);
+            border-radius: 16px;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            margin-top: auto;
+        }
+
+        .gain-box h2 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+        }
+
+        .gain-box h2 span {
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+
+        .gain-box p {
+            font-size: 0.85rem;
+            color: var(--text-medium);
+            max-width: 80%;
+            line-height: 1.4;
+        }
+
+        .gain-arrows {
+            position: absolute;
+            right: 1rem;
+            bottom: 1rem;
+            color: rgba(61, 123, 244, 0.1);
+            font-size: 4rem;
+            line-height: 0.6;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- Nutrient Distribution Card --- */
+        .nutrients-content {
+            display: flex;
+            align-items: center;
+            gap: 2.5rem;
+            height: 100%;
+        }
+
+        .donut-container {
+            width: 180px;
+            height: 180px;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .donut-chart {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+
+        .donut-segment {
+            fill: none;
+            stroke-width: 4;
+            stroke-linecap: round;
+        }
+        
+        .donut-protein { stroke: var(--secondary-blue); stroke-dasharray: 0 100; transition: stroke-dasharray 1.5s ease; }
+        .donut-carbs { stroke: var(--primary-blue); stroke-dasharray: 0 100; transition: stroke-dasharray 1.5s ease 0.2s; }
+        .donut-fats { stroke: #93c5fd; stroke-dasharray: 0 100; transition: stroke-dasharray 1.5s ease 0.4s; }
+
+        .donut-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .donut-text strong {
+            display: block;
+            font-size: 1.1rem;
+            color: var(--text-dark);
+        }
+        .donut-text span {
+            font-size: 0.8rem;
+            color: var(--text-medium);
+        }
+
+        .nutrients-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .legend {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .info-box {
+            background-color: var(--input-bg);
+            padding: 1.2rem;
+            border-radius: 16px;
+        }
+
+        .info-box h4 {
+            font-size: 0.85rem;
+            color: var(--text-medium);
+            margin-bottom: 0.4rem;
+            font-weight: 600;
+        }
+
+        .info-box p {
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            font-weight: 500;
+            line-height: 1.4;
+        }
+
+        /* --- Sleep vs Activity Chart Card --- */
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .toggle-pill {
+            display: flex;
+            background-color: var(--input-bg);
+            border-radius: 50px;
+            padding: 0.3rem;
+        }
+
+        .toggle-btn {
+            border: none;
+            background: transparent;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-medium);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-btn.active {
+            background-color: var(--bg-right);
+            color: var(--primary-blue);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .line-chart-wrapper {
+            position: relative;
+            width: 100%;
+            height: 220px;
+            margin-bottom: 1rem;
+        }
+
+        .line-chart {
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+        }
+
+        .grid-line {
+            stroke: var(--border-light);
+            stroke-width: 1;
+        }
+
+        .y-axis-label {
+            font-size: 10px;
+            fill: var(--text-light);
+            font-weight: 600;
+        }
+
+        .x-axis-label {
+            font-size: 10px;
+            fill: var(--text-light);
+            font-weight: 600;
+            text-anchor: middle;
+        }
+
+        .path-solid {
+            fill: none;
+            stroke: var(--primary-blue);
+            stroke-width: 4;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            animation: drawLine 2s ease-out forwards 0.5s;
+        }
+
+        .path-dashed {
+            fill: none;
+            stroke: var(--secondary-blue);
+            stroke-width: 4;
+            stroke-dasharray: 8 8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            opacity: 0;
+            animation: fadeInPath 1s ease-out forwards 1.5s;
+        }
+
+        @keyframes drawLine {
+            to { stroke-dashoffset: 0; }
+        }
+
+        @keyframes fadeInPath {
+            to { opacity: 1; }
+        }
+
+        .chart-legend-bottom {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+
+        .chart-legend-bottom .legend-item {
+            font-size: 0.85rem;
+        }
+
+        .line-solid {
+            width: 20px;
+            height: 3px;
+            background-color: var(--primary-blue);
+            display: inline-block;
+        }
+
+        .line-dashed {
+            width: 20px;
+            height: 3px;
+            background-image: linear-gradient(to right, var(--secondary-blue) 50%, transparent 50%);
+            background-size: 8px 3px;
+            display: inline-block;
+        }
+
+        /* --- Extended FAB --- */
+        .fab-extended {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            height: 60px;
+            padding: 0 2rem;
+            border-radius: 50px;
+            background: var(--btn-gradient);
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-size: 1rem;
+            font-weight: 600;
+            box-shadow: 0 10px 25px rgba(61, 123, 244, 0.4);
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .fab-extended i {
+            font-size: 1.2rem;
+        }
+
+        .fab-extended:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(61, 123, 244, 0.5);
+        }
+
+        /* --- Responsive Design --- */
+        @media (max-width: 1200px) {
+            .grid-top { grid-template-columns: repeat(2, 1fr); }
+            .grid-bottom { grid-template-columns: 1fr; }
+            .nutrients-content { flex-direction: column; text-align: center; }
+            .legend { justify-content: center; }
+        }
+
+        @media (max-width: 768px) {
+            .grid-top { grid-template-columns: 1fr; }
+            .nav-links { display: none; }
+            .page-header { flex-direction: column; align-items: flex-start; }
+            .header-actions { width: 100%; justify-content: space-between; }
+            .fab-extended span { display: none; }
+            .fab-extended { padding: 0; width: 60px; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar fade-in">
+        <div class="nav-left">
+            <div class="logo">
+                <i class="fa-solid fa-leaf"></i> Smart Diet & Fitness
+            </div>
+            <div class="nav-links">
+                <a href="dashboard.html">Dashboard</a>
+                <a href="nutrition.html">Nutrition</a>
+                <a href="workouts.html">Workouts</a>
+                <a href="progress.html">Progress</a>
+                <a href="reports.html" class="active">Reports</a>
+            </div>
+        </div>
+        <div class="nav-right">
+            <button class="icon-btn" onclick="window.location.href='notification.html'"><i class="fa-regular fa-bell"></i></button>
+            <button class="icon-btn" onclick="window.location.href='settings.html'"><i class="fa-solid fa-gear"></i></button>
+            <div class="user-avatar" onclick="window.location.href='achievements.html'">W</div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        
+        <!-- Header -->
+        <div class="page-header fade-in delay-1">
+            <div class="header-title">
+                <span class="subtitle">Performance Insights</span>
+                <h1>Monthly Analysis</h1>
+            </div>
+            <div class="header-actions">
+                <select class="custom-select">
+                    <option>October 2026 Summary</option>
+                    <option selected>September 2026 Summary</option>
+                    <option>August 2026 Summary</option>
+                </select>
+                <button class="btn-download">
+                    <i class="fa-solid fa-download"></i> Download PDF
+                </button>
+            </div>
+        </div>
+
+        <!-- Top Grid -->
+        <div class="grid-top">
+            
+            <!-- Adherence Score -->
+            <div class="card adherence-card fade-in delay-2">
+                <h3 class="card-title" style="text-align: left; width: 100%;">Adherence Score</h3>
+                <i class="fa-solid fa-shield-halved shield-icon"></i>
+                
+                <div class="circular-chart-container">
+                    <svg viewBox="0 0 36 36" class="circular-chart">
+                        <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                        <path class="circle-fill" id="adherenceChart" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    </svg>
+                    <div class="chart-text">
+                        <span class="val">92%</span>
+                        <span class="lbl">Monthly Goal</span>
+                    </div>
+                </div>
+                
+                <p>Excellent consistency. You've hit your nutrition targets 28 out of 30 days.</p>
+            </div>
+
+            <!-- Calorie Balance -->
+            <div class="card fade-in delay-2">
+                <h3 class="card-title" style="margin-bottom: 1.5rem;">Calorie Balance</h3>
+                
+                <div class="cal-row">
+                    <span class="cal-label">Energy In</span>
+                    <span class="cal-val">2,100 kcal</span>
+                </div>
+                <div class="bar-bg">
+                    <div class="bar-fill-light" id="energyInBar"></div>
+                </div>
+
+                <div class="cal-row">
+                    <span class="cal-label">Energy Out</span>
+                    <span class="cal-val">2,650 kcal</span>
+                </div>
+                <div class="bar-bg">
+                    <div class="bar-fill-dark" id="energyOutBar"></div>
+                </div>
+
+                <div class="deficit-box">
+                    <div class="deficit-info">
+                        <span>AVG. DEFICIT</span>
+                        <strong>-550 kcal/day</strong>
+                    </div>
+                    <div class="trend-icon">
+                        <i class="fa-solid fa-arrow-trend-down"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Exercise Performance -->
+            <div class="card fade-in delay-2">
+                <h3 class="card-title" style="margin-bottom: 1.5rem;">Top Exercise Performance</h3>
+                
+                <div class="exercise-header">
+                    <div class="ex-icon"><i class="fa-solid fa-dumbbell"></i></div>
+                    <div class="ex-text">
+                        <span>Strength Highlight</span>
+                        <strong>Deadlift</strong>
+                    </div>
+                </div>
+
+                <div class="gain-box">
+                    <h2>+15kg <span>Total Gain</span></h2>
+                    <p>New personal record reached on Sept 24.</p>
+                    <div class="gain-arrows">
+                        <i class="fa-solid fa-angle-up" style="margin-bottom: -20px;"></i>
+                        <i class="fa-solid fa-angle-up" style="margin-bottom: -20px; opacity: 0.6;"></i>
+                        <i class="fa-solid fa-angle-up" style="opacity: 0.3;"></i>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Bottom Grid -->
+        <div class="grid-bottom">
+            
+            <!-- Nutrient Distribution -->
+            <div class="card fade-in delay-3">
+                <div class="card-header">
+                    <h3 class="card-title">Nutrient Distribution</h3>
+                    <div class="legend">
+                        <div class="legend-item"><div class="dot" style="background: var(--secondary-blue);"></div> Protein</div>
+                        <div class="legend-item"><div class="dot" style="background: var(--primary-blue);"></div> Carbs</div>
+                        <div class="legend-item"><div class="dot" style="background: #93c5fd;"></div> Fats</div>
+                    </div>
+                </div>
+
+                <div class="nutrients-content">
+                    <div class="donut-container">
+                        <svg viewBox="0 0 36 36" class="donut-chart">
+                            <!-- Protein: 40% -->
+                            <path class="donut-segment donut-protein" id="donutProtein" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                            <!-- Carbs: 40% (Starts at offset -40) -->
+                            <path class="donut-segment donut-carbs" id="donutCarbs" stroke-dashoffset="-40" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                            <!-- Fats: 20% (Starts at offset -80) -->
+                            <path class="donut-segment donut-fats" id="donutFats" stroke-dashoffset="-80" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                        </svg>
+                        <div class="donut-text">
+                            <strong>Daily</strong>
+                            <span>Optimal</span>
+                        </div>
+                    </div>
+
+                    <div class="nutrients-info">
+                        <div class="info-box">
+                            <h4>Protein Focus</h4>
+                            <p>Maintaining 2.2g per kg of body weight for muscle synthesis.</p>
+                        </div>
+                        <div class="info-box">
+                            <h4>Status</h4>
+                            <p>Within target range for 22 consecutive days.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sleep vs Activity Impact -->
+            <div class="card fade-in delay-3">
+                <div class="chart-header">
+                    <h3 class="card-title">Sleep vs. Activity Impact</h3>
+                    <div class="toggle-pill">
+                        <button class="toggle-btn active">Monthly</button>
+                        <button class="toggle-btn">Weekly</button>
+                    </div>
+                </div>
+
+                <div class="line-chart-wrapper">
+                    <svg viewBox="0 0 600 200" class="line-chart" preserveAspectRatio="none">
+                        <!-- Grid Lines -->
+                        <line x1="30" y1="20" x2="600" y2="20" class="grid-line"/>
+                        <line x1="30" y1="60" x2="600" y2="60" class="grid-line"/>
+                        <line x1="30" y1="100" x2="600" y2="100" class="grid-line"/>
+                        <line x1="30" y1="140" x2="600" y2="140" class="grid-line"/>
+                        <line x1="30" y1="180" x2="600" y2="180" class="grid-line"/>
+
+                        <!-- Y Axis Labels -->
+                        <text x="20" y="24" class="y-axis-label" text-anchor="end">10h</text>
+                        <text x="20" y="64" class="y-axis-label" text-anchor="end">8h</text>
+                        <text x="20" y="104" class="y-axis-label" text-anchor="end">6h</text>
+                        <text x="20" y="144" class="y-axis-label" text-anchor="end">4h</text>
+                        <text x="20" y="184" class="y-axis-label" text-anchor="end">2h</text>
+
+                        <!-- X Axis Labels -->
+                        <text x="80" y="198" class="x-axis-label">W1</text>
+                        <text x="250" y="198" class="x-axis-label">W2</text>
+                        <text x="420" y="198" class="x-axis-label">W3</text>
+                        <text x="580" y="198" class="x-axis-label">W4</text>
+
+                        <!-- Solid Line (Sleep) -->
+                        <path class="path-solid" d="M 30 100 C 100 90, 150 120, 250 110 C 320 100, 380 40, 420 50 C 460 60, 480 140, 520 130 C 560 120, 580 40, 600 80" />
+                        
+                        <!-- Dashed Line (Activity Intensity) -->
+                        <path class="path-dashed" d="M 30 160 C 100 150, 150 180, 250 170 C 320 160, 380 90, 420 100 C 460 110, 480 180, 520 170 C 560 160, 580 90, 600 140" />
+                    </svg>
+                </div>
+
+                <div class="chart-legend-bottom">
+                    <div class="legend-item"><div class="line-solid"></div> Sleep Duration</div>
+                    <div class="legend-item"><div class="line-dashed"></div> Workout Intensity</div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Floating Action Button -->
+    <button class="fab-extended fade-in delay-4">
+        <i class="fa-solid fa-chart-line"></i>
+        <span>Generate New Report</span>
+    </button>
+
+    <!-- Scripts -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // Entrance Animations
+            setTimeout(() => {
+                const elements = document.querySelectorAll('.fade-in');
+                elements.forEach(el => el.classList.add('visible'));
+            }, 100);
+
+            // Animate Circular Adherence Chart (92%)
+            setTimeout(() => {
+                document.getElementById('adherenceChart').style.strokeDasharray = "92, 100";
+            }, 500);
+
+            // Animate Calorie Bars
+            setTimeout(() => {
+                document.getElementById('energyInBar').style.width = "75%";
+                document.getElementById('energyOutBar').style.width = "95%";
+            }, 600);
+
+            // Animate Donut Chart Segments
+            setTimeout(() => {
+                // Protein 40%, Carbs 40%, Fats 20%
+                document.getElementById('donutProtein').style.strokeDasharray = "40 100";
+                document.getElementById('donutCarbs').style.strokeDasharray = "40 100";
+                document.getElementById('donutFats').style.strokeDasharray = "20 100";
+            }, 700);
+        });
+    </script>
+
+</body>
+</html>
