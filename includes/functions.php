@@ -60,6 +60,22 @@ function sanitize($data)
 }
 
 /**
+ * Plain text for database storage (names, notes) — no HTML entities.
+ */
+function sanitize_plain_text($data, int $maxLength = 190): string
+{
+    if ($data === null || !is_string($data)) {
+        return '';
+    }
+    $t = trim(strip_tags($data));
+    $t = preg_replace('/\x00/', '', $t);
+    if (function_exists('mb_substr')) {
+        return mb_substr($t, 0, $maxLength, 'UTF-8');
+    }
+    return substr($t, 0, $maxLength);
+}
+
+/**
  * Sanitize numeric input
  * @param mixed $data
  * @return int|float Cleaned number
@@ -588,6 +604,181 @@ function read_json_input(): array
 // USER HELPERS (for header/navbar)
 // =====================================================
 
+function db_table_has_column(PDO $pdo, string $table, string $column): bool
+{
+    static $cache = [];
+
+    $key = $table . '.' . $column;
+    if (isset($cache[$key])) {
+        return $cache[$key];
+    }
+    try {
+        $stmt = $pdo->prepare(
+            'SELECT COUNT(*) FROM information_schema.COLUMNS
+             WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND COLUMN_NAME = ?'
+        );
+        $stmt->execute([DB_NAME, $table, $column]);
+        $cache[$key] = (int) $stmt->fetchColumn() > 0;
+    } catch (PDOException $e) {
+        error_log('db_table_has_column: ' . $e->getMessage());
+        $cache[$key] = false;
+    }
+
+    return $cache[$key];
+}
+
+/**
+ * Ensure profiles row exists (fixes orphan users where signup insert failed silently).
+ */
+function ensure_profile_row_exists(PDO $pdo, int $user_id): void
+{
+    try {
+        $chk = $pdo->prepare('SELECT id FROM profiles WHERE user_id = ? LIMIT 1');
+        $chk->execute([$user_id]);
+        if ($chk->fetch()) {
+            return;
+        }
+
+        $ins = $pdo->prepare(
+            'INSERT INTO profiles (
+                user_id, height_cm, current_weight_kg, target_weight_kg,
+                activity_level, fitness_goal, onboarding_completed
+            ) VALUES (?, 170.00, 70.00, 70.00, ?, ?, 0)'
+        );
+        $ins->execute([$user_id, 'lightly_active', 'maintenance']);
+    } catch (PDOException $e) {
+        error_log('ensure_profile_row_exists: ' . $e->getMessage());
+    }
+}
+
+/**
+ * Ensure preferences row exists for user.
+ */
+function ensure_preferences_row(PDO $pdo, int $user_id): void
+{
+    try {
+        $chk = $pdo->prepare('SELECT id FROM preferences WHERE user_id = ? LIMIT 1');
+        $chk->execute([$user_id]);
+        if ($chk->fetch()) {
+            return;
+        }
+        $ins = $pdo->prepare('INSERT INTO preferences (user_id) VALUES (?)');
+        $ins->execute([$user_id]);
+    } catch (PDOException $e) {
+        error_log('ensure_preferences_row: ' . $e->getMessage());
+    }
+}
+
+/**
+ * Save onboarding profile fields after step 1 (not only after step 3).
+ */
+function persist_onboarding_profile_step1(PDO $pdo, int $user_id, array $d): void
+{
+    ensure_profile_row_exists($pdo, $user_id);
+    $stmt = $pdo->prepare(
+        'UPDATE profiles SET
+            first_name = ?, last_name = ?, date_of_birth = ?, gender = ?,
+            height_cm = ?, current_weight_kg = ?, target_weight_kg = ?
+         WHERE user_id = ?'
+    );
+    $stmt->execute([
+        $d['first_name'],
+        $d['last_name'],
+        $d['date_of_birth'],
+        $d['gender'],
+        $d['height_cm'],
+        $d['current_weight_kg'],
+        $d['target_weight_kg'],
+        $user_id,
+    ]);
+}
+
+/**
+ * Save preferences after onboarding step 2.
+ */
+function persist_onboarding_preferences_step2(PDO $pdo, int $user_id, string $diet_type, string $allergies_json, string $medical_json): void
+{
+    ensure_preferences_row($pdo, $user_id);
+    $stmt = $pdo->prepare(
+        'UPDATE preferences SET diet_type = ?, allergies = ?, medical_conditions = ? WHERE user_id = ?'
+    );
+    $stmt->execute([$diet_type, $allergies_json, $medical_json, $user_id]);
+}
+
+/**
+ * Process avatar upload; returns new basename or null on skip. Sets $error out param on failure.
+ *
+ * @param-out string|null $error
+ */
+function process_profile_avatar_upload(int $user_id, ?string $previous_basename, array $file, ?string &$error = null): ?string
+{
+    $error = null;
+    if (empty($file['tmp_name']) || !is_uploaded_file($file['tmp_name'])) {
+        return null;
+    }
+    if (($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+        $error = 'Upload failed. Please try a smaller image.';
+
+        return null;
+    }
+
+    $finfo = new finfo(FILEINFO_MIME_TYPE);
+    $mime = $finfo->file($file['tmp_name']) ?: '';
+    $map = [
+        'image/jpeg' => 'jpg',
+        'image/png' => 'png',
+        'image/webp' => 'webp',
+    ];
+    if (!isset($map[$mime])) {
+        $error = 'Please upload a JPEG, PNG, or WebP image.';
+
+        return null;
+    }
+    $ext = $map[$mime];
+    if (($file['size'] ?? 0) > 2 * 1024 * 1024) {
+        $error = 'Image must be 2 MB or smaller.';
+
+        return null;
+    }
+
+    $dir = defined('AVATAR_UPLOAD_DIR') ? AVATAR_UPLOAD_DIR : dirname(__DIR__) . '/public/uploads/avatars';
+    if (!is_dir($dir) && !@mkdir($dir, 0755, true)) {
+        $error = 'Upload directory is not writable.';
+
+        return null;
+    }
+
+    $safe = 'u' . $user_id . '_' . bin2hex(random_bytes(8)) . '.' . $ext;
+    $dest = $dir . DIRECTORY_SEPARATOR . $safe;
+    if (!move_uploaded_file($file['tmp_name'], $dest)) {
+        $error = 'Could not save the image.';
+
+        return null;
+    }
+
+    if ($previous_basename !== null && $previous_basename !== '' && $previous_basename !== $safe) {
+        $prev = $dir . DIRECTORY_SEPARATOR . basename($previous_basename);
+        if (is_file($prev) && str_starts_with(basename($prev), 'u' . $user_id . '_')) {
+            @unlink($prev);
+        }
+    }
+
+    return $safe;
+}
+
+/**
+ * Public URL for a stored avatar basename.
+ */
+function avatar_public_url(?string $basename): ?string
+{
+    if ($basename === null || $basename === '') {
+        return null;
+    }
+    $seg = defined('AVATAR_WEB_PATH') ? AVATAR_WEB_PATH : '/public/uploads/avatars';
+
+    return APP_URL . $seg . '/' . rawurlencode(basename($basename));
+}
+
 /**
  * Get current user profile (for navbar/avatar).
  * // 🔧 Fixes missing function used by includes/header.php.
@@ -601,12 +792,17 @@ function get_current_user_profile(): ?array
 
     try {
         $pdo = get_pdo();
+        $pic_sel = '';
+        if (db_table_has_column($pdo, 'profiles', 'profile_picture')) {
+            $pic_sel = ', p.profile_picture';
+        }
+
         $stmt = $pdo->prepare('
             SELECT 
                 u.id,
                 u.email,
                 p.first_name,
-                p.last_name
+                p.last_name' . $pic_sel . '
             FROM users u
             LEFT JOIN profiles p ON p.user_id = u.id
             WHERE u.id = ?

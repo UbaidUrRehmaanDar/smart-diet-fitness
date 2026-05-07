@@ -16,34 +16,99 @@ $error_msg = '';
 // Handle Settings Update
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_settings'])) {
     verify_csrf();
-    $first_name = trim($_POST['first_name'] ?? '');
-    $last_name = trim($_POST['last_name'] ?? '');
+    $first_name = sanitize_plain_text($_POST['first_name'] ?? '');
+    $last_name = sanitize_plain_text($_POST['last_name'] ?? '');
     $meal_reminders = isset($_POST['meal_reminders']) ? 1 : 0;
     $hydration_reminders = isset($_POST['hydration_reminders']) ? 1 : 0;
     $theme = in_array($_POST['theme'] ?? '', ['light', 'dark'], true) ? $_POST['theme'] : 'light';
 
-    try {
-        $pdo->beginTransaction();
-        
-        // Update profile
-        $stmt = $pdo->prepare('UPDATE profiles SET first_name = ?, last_name = ? WHERE user_id = ?');
-        $stmt->execute([$first_name, $last_name, $user_id]);
-
-        // Update preferences
-        $pref = $pdo->prepare('UPDATE preferences SET meal_reminders = ?, hydration_reminders = ?, theme = ? WHERE user_id = ?');
-        $pref->execute([$meal_reminders, $hydration_reminders, $theme, $user_id]);
-
-        // If no preference record matched (maybe missing), insert it
-        if ($pref->rowCount() === 0 && !fetch_preferences($pdo, $user_id)) {
-            $insert_pref = $pdo->prepare('INSERT INTO preferences (user_id, meal_reminders, hydration_reminders, theme) VALUES (?, ?, ?, ?)');
-            $insert_pref->execute([$user_id, $meal_reminders, $hydration_reminders, $theme]);
+    $existing_pic = null;
+    if (db_table_has_column($pdo, 'profiles', 'profile_picture')) {
+        $pch = $pdo->prepare('SELECT profile_picture FROM profiles WHERE user_id = ? LIMIT 1');
+        $pch->execute([$user_id]);
+        $existing_pic = $pch->fetchColumn();
+        $existing_pic = $existing_pic !== false ? (string) $existing_pic : null;
+        if ($existing_pic === '') {
+            $existing_pic = null;
         }
+    }
 
-        $pdo->commit();
-        $success_msg = 'Settings updated successfully.';
-    } catch (Exception $e) {
-        $pdo->rollBack();
-        $error_msg = 'Error updating settings. Please try again.';
+    $avatar_basename = $existing_pic;
+    $pending_remove_avatar_basename = null;
+    $upload_err_msg = null;
+    if (db_table_has_column($pdo, 'profiles', 'profile_picture')) {
+        if (!empty($_POST['remove_avatar'])) {
+            $avatar_basename = null;
+            if ($existing_pic !== null) {
+                $pending_remove_avatar_basename = $existing_pic;
+            }
+        } elseif (!empty($_FILES['profile_picture']['tmp_name'])) {
+            $pic_err = null;
+            $new_bn = process_profile_avatar_upload($user_id, $existing_pic, $_FILES['profile_picture'], $pic_err);
+            if ($pic_err !== null) {
+                $upload_err_msg = $pic_err;
+            } elseif ($new_bn !== null) {
+                $avatar_basename = $new_bn;
+            }
+        }
+    }
+
+    if ($upload_err_msg !== null) {
+        $error_msg = $upload_err_msg;
+    } else {
+        try {
+            $pdo->beginTransaction();
+
+            ensure_profile_row_exists($pdo, $user_id);
+            ensure_preferences_row($pdo, $user_id);
+
+            if (db_table_has_column($pdo, 'profiles', 'profile_picture')) {
+                $stmt = $pdo->prepare(
+                    'UPDATE profiles SET first_name = ?, last_name = ?, profile_picture = ? WHERE user_id = ?'
+                );
+                $stmt->execute([$first_name, $last_name, $avatar_basename, $user_id]);
+            } else {
+                $stmt = $pdo->prepare('UPDATE profiles SET first_name = ?, last_name = ? WHERE user_id = ?');
+                $stmt->execute([$first_name, $last_name, $user_id]);
+            }
+
+            $pref = $pdo->prepare(
+                'UPDATE preferences SET meal_reminders = ?, hydration_reminders = ?, theme = ? WHERE user_id = ?'
+            );
+            $pref->execute([$meal_reminders, $hydration_reminders, $theme, $user_id]);
+
+            if ($pref->rowCount() === 0) {
+                $peek = fetch_preferences($pdo, $user_id);
+                if (!$peek) {
+                    $insert_pref = $pdo->prepare(
+                        'INSERT INTO preferences (user_id, meal_reminders, hydration_reminders, theme) VALUES (?, ?, ?, ?)'
+                    );
+                    $insert_pref->execute([$user_id, $meal_reminders, $hydration_reminders, $theme]);
+                }
+            }
+
+            $pdo->commit();
+            if ($pending_remove_avatar_basename) {
+                $dir = defined('AVATAR_UPLOAD_DIR') ? AVATAR_UPLOAD_DIR : dirname(__DIR__) . '/public/uploads/avatars';
+                $old_path = $dir . DIRECTORY_SEPARATOR . basename($pending_remove_avatar_basename);
+                if (
+                    is_file($old_path)
+                    && str_starts_with(basename($old_path), 'u' . $user_id . '_')
+                ) {
+                    @unlink($old_path);
+                }
+            }
+            $_SESSION['user_name'] = trim($first_name . ' ' . $last_name) !== ''
+                ? trim($first_name . ' ' . $last_name)
+                : ($_SESSION['user_name'] ?? 'Member');
+            $success_msg = 'Settings updated successfully.';
+        } catch (Exception $e) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            error_log('Settings save: ' . $e->getMessage());
+            $error_msg = 'Error updating settings. Please try again.';
+        }
     }
 }
 
@@ -73,6 +138,12 @@ $preferences = fetch_preferences($pdo, $user_id);
 $meal_reminders = $preferences['meal_reminders'] ?? 1;
 $hydration_reminders = $preferences['hydration_reminders'] ?? 1;
 $theme_pref = $preferences['theme'] ?? 'light';
+
+$avatar_preview_url = null;
+if (db_table_has_column($pdo, 'profiles', 'profile_picture')
+    && !empty($profile['profile_picture'])) {
+    $avatar_preview_url = avatar_public_url($profile['profile_picture']);
+}
 
 ?>
 <?php require_once __DIR__ . '/../includes/header.php'; ?>
@@ -177,6 +248,23 @@ $theme_pref = $preferences['theme'] ?? 'light';
     @media (max-width: 900px) {
         .settings-container { flex-direction: column; } .settings-sidebar { width: 100%; } .sidebar-menu { flex-direction: row; flex-wrap: wrap; margin-bottom: 1.5rem; } .sidebar-menu li { flex: 1; min-width: 140px; } .sidebar-header { text-align: center; } .input-grid { grid-template-columns: 1fr; }
     }
+
+    .avatar-setting-row {
+        display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap;
+        padding: 1rem; background-color: var(--input-bg); border-radius: 12px;
+    }
+    .avatar-preview-wrap {
+        width: 72px; height: 72px; border-radius: 50%; overflow: hidden;
+        flex-shrink: 0; background: var(--border-light); border: 2px solid var(--border-light);
+    }
+    .avatar-preview-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .avatar-preview-placeholder {
+        width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+        color: var(--text-medium); font-weight: 700;
+    }
+    .avatar-controls { display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-start; font-size: 0.875rem; color: var(--text-medium); }
+    .avatar-controls input[type="file"] { max-width: 220px; }
+    .avatar-remove-row { display: flex; align-items: center; gap: 0.5rem; }
 </style>
 
 <div class="settings-container">
@@ -215,11 +303,41 @@ $theme_pref = $preferences['theme'] ?? 'light';
             <div class="alert alert-danger"><?php echo $error_msg; ?></div>
         <?php endif; ?>
 
-        <form method="POST" action="">
-            <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+        <form method="POST" action="" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
             <input type="hidden" name="update_settings" value="1">
             
             <h3 class="section-title">Profile Settings</h3>
+            <?php if (db_table_has_column($pdo, 'profiles', 'profile_picture')): ?>
+                <div class="input-grid" style="margin-bottom: 1.25rem;">
+                    <div class="input-group" style="grid-column: 1 / -1;">
+                        <label>Profile photo</label>
+                        <div class="avatar-setting-row">
+                            <div class="avatar-preview-wrap">
+                                <?php if ($avatar_preview_url): ?>
+                                    <img src="<?php echo htmlspecialchars($avatar_preview_url, ENT_QUOTES, 'UTF-8'); ?>" alt="">
+                                <?php else: ?>
+                                    <div class="avatar-preview-placeholder">
+                                        <?php
+                                        $fn0 = (string)($profile['first_name'] ?? '');
+                                        echo htmlspecialchars(strtoupper($fn0 !== '' ? substr($fn0, 0, 1) : 'U'), ENT_QUOTES, 'UTF-8');
+                                        ?>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                            <div class="avatar-controls">
+                                <input type="file" name="profile_picture" accept="image/jpeg,image/png,image/webp">
+                                <span>JPEG or PNG or WebP, max 2 MB.</span>
+                                <?php if ($avatar_preview_url): ?>
+                                    <label class="avatar-remove-row">
+                                        <input type="checkbox" name="remove_avatar" value="1"> Remove current photo
+                                    </label>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <?php endif; ?>
             <div class="input-grid">
                 <div class="input-group">
                     <label>First Name</label>

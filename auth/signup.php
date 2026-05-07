@@ -18,7 +18,7 @@ $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verify_csrf();
     
-    $name = sanitize($_POST['name'] ?? '');
+    $name = sanitize_plain_text($_POST['name'] ?? '', 200);
     $email = sanitize($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
     $confirm = $_POST['confirm_password'] ?? '';
@@ -169,7 +169,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 session_regenerate_id(true);
                 $_SESSION['user_id'] = $user_id;
                 $_SESSION['role'] = 'user';
-                $_SESSION['user_name'] = $name; // Store full name for display
+                $_SESSION['user_name'] = trim((string)$first_name . ' ' . (string)$last_name) !== ''
+                    ? trim((string)$first_name . ' ' . (string)$last_name)
+                    : (strstr($email, '@', true) ?: 'Member');
                 $_SESSION['onboarding_completed'] = 0;
 
                 // Redirect to onboarding step 1

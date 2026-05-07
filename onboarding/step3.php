@@ -39,6 +39,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Add goal to session data
             $step_data['fitness_goal'] = $fitness_goal;
 
+            ensure_profile_row_exists($pdo, $user_id);
+
             // Calculate age from DOB
             $dob = new DateTime($step_data['date_of_birth']);
             $today = new DateTime();

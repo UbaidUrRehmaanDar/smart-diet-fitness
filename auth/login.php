@@ -57,10 +57,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (empty($error)) {
         // Check credentials (is_active when column exists)
         try {
-            $stmt = $pdo->prepare('SELECT id, password_hash, role, is_active FROM users WHERE email = ?');
+            $stmt = $pdo->prepare('SELECT id, email, password_hash, role, is_active FROM users WHERE email = ?');
             $stmt->execute([$email]);
         } catch (PDOException $e) {
-            $stmt = $pdo->prepare('SELECT id, password_hash, role FROM users WHERE email = ?');
+            $stmt = $pdo->prepare('SELECT id, email, password_hash, role FROM users WHERE email = ?');
             $stmt->execute([$email]);
         }
         $user = $stmt->fetch();
@@ -84,7 +84,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Set session variables
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['role'] = $user['role'];
-            $_SESSION['user_name'] = 'User'; // Fallback name since columns are missing
+            $_SESSION['user_name'] = 'Member';
+            try {
+                $pn = $pdo->prepare(
+                    'SELECT first_name, last_name FROM profiles WHERE user_id = ? LIMIT 1'
+                );
+                $pn->execute([$user['id']]);
+                $prow = $pn->fetch();
+                if ($prow) {
+                    $disp = trim((string)($prow['first_name'] ?? '') . ' ' . (string)($prow['last_name'] ?? ''));
+                    if ($disp !== '') {
+                        $_SESSION['user_name'] = $disp;
+                    } elseif (!empty($user['email'])) {
+                        $at = strstr($user['email'], '@', true);
+                        $_SESSION['user_name'] = $at !== false ? $at : 'Member';
+                    }
+                }
+            } catch (PDOException $e) {
+                error_log('Login profile name fetch: ' . $e->getMessage());
+            }
 
             $needs_onboarding = user_needs_onboarding($pdo, (int) $user['id']);
             $_SESSION['onboarding_completed'] = $needs_onboarding ? 0 : 1;
