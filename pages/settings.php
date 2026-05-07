@@ -188,8 +188,8 @@ $theme_pref = $preferences['theme'] ?? 'light';
         </div>
 
         <ul class="sidebar-menu">
-            <li><a href="#" class="active"><i class="fa-regular fa-user"></i> Profile</a></li>
-            <li><a href="#"><i class="fa-solid fa-shield-halved"></i> Privacy & Security</a></li>
+            <li><a href="settings.php" class="active"><i class="fa-regular fa-user"></i> Profile</a></li>
+            <li><a href="<?php echo htmlspecialchars(APP_URL . '/pages/security.php', ENT_QUOTES, 'UTF-8'); ?>"><i class="fa-solid fa-shield-halved"></i> Privacy & Security</a></li>
             <li><a href="notification.php"><i class="fa-regular fa-bell"></i> Notifications</a></li>
         </ul>
 

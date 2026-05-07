@@ -595,9 +595,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 <div class="footer-links fade-in delay-4">
                     <div class="links">
-                        <a href="#">Privacy Policy</a>
-                        <a href="#">Terms of Service</a>
-                        <a href="#">Support</a>
+                        <a href="<?php echo htmlspecialchars(APP_URL . '/pages/privacy.php', ENT_QUOTES, 'UTF-8'); ?>">Privacy Policy</a>
+                        <a href="<?php echo htmlspecialchars(APP_URL . '/pages/terms.php', ENT_QUOTES, 'UTF-8'); ?>">Terms of Service</a>
+                        <a href="<?php echo htmlspecialchars(APP_URL . '/pages/support.php', ENT_QUOTES, 'UTF-8'); ?>">Support</a>
                     </div>
                     <span class="copyright">© 2026 Smart Diet & Fitness.</span>
                 </div>
