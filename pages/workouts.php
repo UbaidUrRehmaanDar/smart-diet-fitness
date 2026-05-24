@@ -29,6 +29,20 @@ try {
     $recommended_workouts = [];
 }
 
+// 1b. Fetch Today's Logged Workouts (what the user actually saved)
+try {
+    $stmt = $pdo->prepare('
+        SELECT id, exercise_name, exercise_type, duration_mins, intensity, kcal_burned, notes, logged_at
+        FROM workout_logs
+        WHERE user_id = ? AND logged_date = ?
+        ORDER BY logged_at DESC
+    ');
+    $stmt->execute([$user_id, $today]);
+    $todays_logged_workouts = $stmt->fetchAll();
+} catch (PDOException $e) {
+    $todays_logged_workouts = [];
+}
+
 // 2. Fetch Weekly Active Minutes for Chart
 // Approximating Monday-Sunday for the chart
 $weekly_data = [
@@ -154,7 +168,7 @@ try {
         box-shadow: 0 12px 35px rgba(27, 54, 121, 0.08);
     }
 
-    .main-content {
+    .workouts-page-content {
         padding: 3rem;
         max-width: 1400px;
         margin: 0 auto;
@@ -177,28 +191,32 @@ try {
     .workout-card {
         background-color: var(--bg-right);
         border-radius: 20px;
-        padding: 1rem;
+        padding: 1.25rem;
         box-shadow: 0 10px 30px rgba(27, 54, 121, 0.04);
         border: 2px solid transparent;
         transition: all 0.3s ease;
         cursor: pointer;
         display: flex;
         flex-direction: column;
+        gap: 0.75rem;
     }
 
     .workout-card:hover {
         border-color: var(--border-light);
-        transform: translateY(-5px);
-        box-shadow: 0 15px 40px rgba(27, 54, 121, 0.08);
+        transform: translateY(-4px);
     }
 
-    .workout-img {
+    /* Card header — coloured icon strip, no image */
+    .workout-card-header {
         width: 100%;
-        height: 160px;
-        border-radius: 14px;
-        background-position: center;
-        background-size: cover;
-        margin-bottom: 1.25rem;
+        height: 90px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.2rem;
+        color: rgba(255,255,255,0.9);
+        flex-shrink: 0;
     }
 
     .workout-info {
@@ -310,7 +328,7 @@ try {
     }
 
     .achievement-card {
-        background: var(--btn-gradient);
+        background: var(--btn-primary);
         color: white;
         border-radius: 24px;
         padding: 2rem;
@@ -356,16 +374,19 @@ try {
         justify-content: space-between;
         align-items: center;
         padding: 1.5rem 2rem;
-        background-color: var(--input-bg);
-        border-radius: 20px;
+        background-color: var(--bg-right);
+        border: 2px solid var(--border-light);
+        border-radius: 50px;
         text-decoration: none;
         color: var(--text-dark);
-        transition: all 0.3s ease;
+        transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
     }
 
     .community-link:hover {
-        background-color: #dbe7ff;
-        transform: translateX(5px);
+        border-color: var(--primary-blue);
+        color: var(--primary-blue);
+        background-color: var(--input-bg);
+        border-radius: 12px;
     }
 
     .comm-info span {
@@ -379,6 +400,12 @@ try {
     .comm-info h4 {
         font-size: 1.05rem;
         font-weight: 700;
+        color: var(--text-dark);
+    }
+
+    .community-link:hover .comm-info h4,
+    .community-link:hover .comm-info span {
+        color: var(--primary-blue);
     }
 
     .community-link i {
@@ -393,20 +420,22 @@ try {
         width: 60px;
         height: 60px;
         border-radius: 50%;
-        background: var(--btn-gradient);
+        background: var(--btn-primary);
         color: white;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 1.5rem;
-        box-shadow: 0 10px 25px rgba(61, 123, 244, 0.4);
         cursor: pointer;
         border: none;
         transition: all 0.3s ease;
         z-index: 100;
     }
 
-    .fab:hover { transform: scale(1.1) rotate(90deg); }
+    .fab:hover { 
+        background: var(--btn-primary-hover);
+        border-radius: 12px;
+    }
 
     /* --- Workout Modal --- */
     .modal-overlay {
@@ -506,14 +535,23 @@ try {
     }
 
     .btn-modal-primary {
-        background: var(--btn-gradient);
-        color: #fff;
+        background: #3b82f6 !important;
+        color: #fff !important;
         border: none;
         border-radius: 50px;
         padding: 0.8rem 1.8rem;
         font-weight: 600;
         cursor: pointer;
         transition: all 0.3s ease;
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .btn-modal-primary:hover {
+        background: #2563eb !important;
+        border-radius: 12px;
     }
 
     .btn-modal-primary:disabled {
@@ -522,13 +560,25 @@ try {
     }
 
     .btn-modal-secondary {
-        background: transparent;
+        background: var(--bg-right) !important;
         border: 2px solid var(--border-light);
-        color: var(--text-dark);
+        color: var(--text-dark) !important;
         border-radius: 50px;
         padding: 0.7rem 1.4rem;
         font-weight: 600;
         cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .btn-modal-secondary:hover {
+        border-color: var(--primary-blue);
+        color: var(--primary-blue) !important;
+        background-color: var(--input-bg) !important;
+        border-radius: 12px;
     }
 
     @media (max-width: 1100px) {
@@ -544,7 +594,7 @@ try {
     }
 </style>
 
-<div class="main-content">
+<div class="workouts-page-content">
     <div class="filters-bar fade-in delay-1">
         <div class="search-wrapper">
             <i class="fa-solid fa-magnifying-glass"></i>
@@ -552,22 +602,22 @@ try {
         </div>
         <div class="dropdowns">
             <select class="custom-select" id="catFilter">
-                <option value="" disabled selected>Category</option>
-                <option>Strength</option>
-                <option>Cardio</option>
-                <option>Yoga</option>
+                <option value="">All Categories</option>
+                <option value="strength">Strength</option>
+                <option value="cardio">Cardio</option>
+                <option value="yoga">Yoga</option>
             </select>
             <select class="custom-select" id="diffFilter">
-                <option value="" disabled selected>Difficulty</option>
-                <option>Beginner</option>
-                <option>Intermediate</option>
-                <option>Advanced</option>
+                <option value="">All Levels</option>
+                <option value="beginner">Beginner</option>
+                <option value="intermediate">Intermediate</option>
+                <option value="advanced">Advanced</option>
             </select>
             <select class="custom-select" id="durFilter">
-                <option value="" disabled selected>Duration</option>
-                <option>&lt; 30 mins</option>
-                <option>30 - 45 mins</option>
-                <option>45+ mins</option>
+                <option value="">Any Duration</option>
+                <option value="< 30 mins">&lt; 30 mins</option>
+                <option value="30 - 45 mins">30 - 45 mins</option>
+                <option value="45+ mins">45+ mins</option>
             </select>
         </div>
     </div>
@@ -576,17 +626,92 @@ try {
     
     <!-- Workouts Grid -->
     <div class="workouts-grid fade-in delay-2">
-        
+
+        <?php if (!empty($todays_logged_workouts)): ?>
+        <!-- ── Today's Logged Workouts (from DB) ── -->
+        <div style="grid-column:1/-1;margin-bottom:0.5rem;">
+            <h3 style="font-size:1rem;font-weight:700;color:var(--text-medium);text-transform:uppercase;letter-spacing:1px;margin-bottom:1rem;">
+                <i class="fa-solid fa-circle-check" style="color:#22c55e;margin-right:0.4rem;"></i>
+                Today's Logged Workouts (<?= count($todays_logged_workouts) ?>)
+            </h3>
+        </div>
+        <?php
+        $log_colors = ['strength'=>'#3b82f6','cardio'=>'#60a5fa','flexibility'=>'#2563eb','sports'=>'#3b82f6'];
+        $log_icons  = ['strength'=>'fa-dumbbell','cardio'=>'fa-person-running','flexibility'=>'fa-spa','sports'=>'fa-futbol'];
+        foreach ($todays_logged_workouts as $wl):
+            $wl_cat  = strtolower($wl['exercise_type'] ?? 'cardio');
+            $wl_grad = $log_colors[$wl_cat] ?? '#3b82f6';
+            $wl_icon = $log_icons[$wl_cat]  ?? 'fa-dumbbell';
+        ?>
+        <div class="workout-card" data-loggable="1"
+             data-name="<?= htmlspecialchars($wl['exercise_name'], ENT_QUOTES, 'UTF-8') ?>"
+             data-duration="<?= (int)$wl['duration_mins'] ?>"
+             data-kcal="<?= (int)$wl['kcal_burned'] ?>"
+             data-category="<?= htmlspecialchars($wl_cat, ENT_QUOTES, 'UTF-8') ?>"
+             data-difficulty="<?= htmlspecialchars($wl['intensity'], ENT_QUOTES, 'UTF-8') ?>"
+             style="border:2px solid #22c55e22;">
+            <div class="workout-card-header" style="background:<?= $wl_grad ?>;">
+                <i class="fa-solid <?= $wl_icon ?>"></i>
+            </div>
+            <div class="workout-info">
+                <h3><?= htmlspecialchars($wl['exercise_name'], ENT_QUOTES, 'UTF-8') ?></h3>
+                <div class="workout-stats">
+                    <span><i class="fa-regular fa-clock"></i> <?= (int)$wl['duration_mins'] ?> mins</span>
+                    <span><i class="fa-solid fa-bolt"></i> <?= (int)$wl['kcal_burned'] ?> kcal</span>
+                </div>
+                <div class="workout-tags">
+                    <span class="tag tag-blue"><?= htmlspecialchars(ucfirst($wl_cat), ENT_QUOTES, 'UTF-8') ?></span>
+                    <span class="tag" style="background:#dcfce7;color:#166534;"><?= htmlspecialchars(ucfirst($wl['intensity']), ENT_QUOTES, 'UTF-8') ?></span>
+                </div>
+            </div>
+        </div>
+        <?php endforeach; ?>
+
+        <!-- Divider before suggestions -->
+        <div style="grid-column:1/-1;border-top:2px solid var(--border-light);padding-top:1.5rem;margin-top:0.5rem;">
+            <h3 style="font-size:1rem;font-weight:700;color:var(--text-medium);text-transform:uppercase;letter-spacing:1px;margin-bottom:1rem;">
+                <i class="fa-solid fa-lightbulb" style="color:var(--primary-blue);margin-right:0.4rem;"></i>
+                Suggested Workouts
+            </h3>
+        </div>
+        <?php endif; ?>
+
+        <?php
+        // CSS gradient backgrounds per category — no external images needed
+        $card_gradients = [
+            'strength'    => '#3b82f6',
+            'cardio'      => '#60a5fa',
+            'flexibility' => '#2563eb',
+            'sports'      => '#3b82f6',
+            'general'     => '#60a5fa',
+        ];
+        $card_icons = [
+            'strength'    => 'fa-dumbbell',
+            'cardio'      => 'fa-person-running',
+            'flexibility' => 'fa-spa',
+            'sports'      => 'fa-futbol',
+            'general'     => 'fa-bolt',
+        ];
+        ?>
         <?php if (!empty($recommended_workouts)): ?>
             <?php foreach ($recommended_workouts as $workout): ?>
                 <?php
-                $workout_name = $workout['name'] ?? 'Workout';
+                $workout_name     = $workout['name'] ?? 'Workout';
                 $workout_duration = (int)($workout['duration'] ?? 30);
-                $workout_kcal = (int)($workout['kcal'] ?? 150);
+                $workout_kcal     = (int)($workout['kcal'] ?? 150);
                 $workout_category = strtolower($workout['category'] ?? 'general');
+                $grad  = $card_gradients[$workout_category] ?? $card_gradients['general'];
+                $icon  = $card_icons[$workout_category]    ?? $card_icons['general'];
                 ?>
-                <div class="workout-card" data-loggable="1" data-name="<?php echo htmlspecialchars($workout_name, ENT_QUOTES, 'UTF-8'); ?>" data-duration="<?php echo $workout_duration; ?>" data-kcal="<?php echo $workout_kcal; ?>" data-category="<?php echo htmlspecialchars($workout_category, ENT_QUOTES, 'UTF-8'); ?>">
-                    <div class="workout-img" style="background-image: url('https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=600&q=80');"></div>
+                <div class="workout-card" data-loggable="1"
+                     data-name="<?php echo htmlspecialchars($workout_name, ENT_QUOTES, 'UTF-8'); ?>"
+                     data-duration="<?php echo $workout_duration; ?>"
+                     data-kcal="<?php echo $workout_kcal; ?>"
+                     data-category="<?php echo htmlspecialchars($workout_category, ENT_QUOTES, 'UTF-8'); ?>"
+                     data-difficulty="">
+                    <div class="workout-card-header" style="background:<?php echo $grad; ?>;">
+                        <i class="fa-solid <?php echo $icon; ?>"></i>
+                    </div>
                     <div class="workout-info">
                         <h3><?php echo htmlspecialchars($workout_name, ENT_QUOTES, 'UTF-8'); ?></h3>
                         <div class="workout-stats">
@@ -600,96 +725,42 @@ try {
                 </div>
             <?php endforeach; ?>
         <?php else: ?>
-            <!-- Fallback Static Data to Match Design exactly as requested when DB is empty -->
-            <div class="workout-card" data-loggable="1" data-name="Full Body HIIT" data-duration="45" data-kcal="350" data-category="strength">
-                <div class="workout-img" style="background-image: url('https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=600&q=80');"></div>
+            <!-- Fallback cards — CSS gradients, no external images -->
+            <?php
+            $fallback_workouts = [
+                ['name'=>'Full Body HIIT',     'duration'=>45, 'kcal'=>350, 'category'=>'strength',    'tag1'=>'Strength',    'tag2'=>'Advanced'],
+                ['name'=>'Vinyasa Flow Core',  'duration'=>30, 'kcal'=>180, 'category'=>'flexibility', 'tag1'=>'Yoga',        'tag2'=>'Intermediate'],
+                ['name'=>'Lower Body Power',   'duration'=>50, 'kcal'=>420, 'category'=>'strength',    'tag1'=>'Strength',    'tag2'=>'Advanced'],
+                ['name'=>'Cardio Endurance',   'duration'=>25, 'kcal'=>300, 'category'=>'cardio',      'tag1'=>'Cardio',      'tag2'=>'Beginner'],
+                ['name'=>'Pilates Sculpt',     'duration'=>40, 'kcal'=>220, 'category'=>'flexibility', 'tag1'=>'Yoga',        'tag2'=>'Intermediate'],
+                ['name'=>'Deadlift Technique', 'duration'=>60, 'kcal'=>450, 'category'=>'strength',    'tag1'=>'Strength',    'tag2'=>'Advanced'],
+            ];
+            foreach ($fallback_workouts as $fw):
+                $grad = $card_gradients[$fw['category']] ?? $card_gradients['general'];
+                $icon = $card_icons[$fw['category']]    ?? $card_icons['general'];
+            ?>
+            <div class="workout-card" data-loggable="1"
+                 data-name="<?php echo htmlspecialchars($fw['name'], ENT_QUOTES, 'UTF-8'); ?>"
+                 data-duration="<?php echo $fw['duration']; ?>"
+                 data-kcal="<?php echo $fw['kcal']; ?>"
+                 data-category="<?php echo htmlspecialchars($fw['category'], ENT_QUOTES, 'UTF-8'); ?>"
+                 data-difficulty="<?php echo htmlspecialchars(strtolower($fw['tag2']), ENT_QUOTES, 'UTF-8'); ?>">
+                <div class="workout-card-header" style="background:<?php echo $grad; ?>;">
+                    <i class="fa-solid <?php echo $icon; ?>"></i>
+                </div>
                 <div class="workout-info">
-                    <h3>Full Body HIIT</h3>
+                    <h3><?php echo htmlspecialchars($fw['name'], ENT_QUOTES, 'UTF-8'); ?></h3>
                     <div class="workout-stats">
-                        <span><i class="fa-regular fa-clock"></i> 45 mins</span>
-                        <span><i class="fa-solid fa-bolt"></i> 350 kcal</span>
+                        <span><i class="fa-regular fa-clock"></i> <?php echo $fw['duration']; ?> mins</span>
+                        <span><i class="fa-solid fa-bolt"></i> <?php echo $fw['kcal']; ?> kcal</span>
                     </div>
                     <div class="workout-tags">
-                        <span class="tag tag-blue">Strength</span>
-                        <span class="tag tag-yellow">Advanced</span>
+                        <span class="tag tag-blue"><?php echo htmlspecialchars($fw['tag1'], ENT_QUOTES, 'UTF-8'); ?></span>
+                        <span class="tag tag-yellow"><?php echo htmlspecialchars($fw['tag2'], ENT_QUOTES, 'UTF-8'); ?></span>
                     </div>
                 </div>
             </div>
-
-            <div class="workout-card" data-loggable="1" data-name="Vinyasa Flow Core" data-duration="30" data-kcal="180" data-category="flexibility">
-                <div class="workout-img" style="background-image: url('https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=600&q=80');"></div>
-                <div class="workout-info">
-                    <h3>Vinyasa Flow Core</h3>
-                    <div class="workout-stats">
-                        <span><i class="fa-regular fa-clock"></i> 30 mins</span>
-                        <span><i class="fa-solid fa-bolt"></i> 180 kcal</span>
-                    </div>
-                    <div class="workout-tags">
-                        <span class="tag tag-blue">Yoga</span>
-                        <span class="tag tag-yellow">Intermediate</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="workout-card" data-loggable="1" data-name="Lower Body Power" data-duration="50" data-kcal="420" data-category="strength">
-                <div class="workout-img" style="background-image: url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=600&q=80');"></div>
-                <div class="workout-info">
-                    <h3>Lower Body Power</h3>
-                    <div class="workout-stats">
-                        <span><i class="fa-regular fa-clock"></i> 50 mins</span>
-                        <span><i class="fa-solid fa-bolt"></i> 420 kcal</span>
-                    </div>
-                    <div class="workout-tags">
-                        <span class="tag tag-blue">Strength</span>
-                        <span class="tag tag-yellow">Advanced</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="workout-card" data-loggable="1" data-name="Cardio Endurance" data-duration="25" data-kcal="300" data-category="cardio">
-                <div class="workout-img" style="background-image: url('https://images.unsplash.com/photo-1538805060514-97d9cc17730c?auto=format&fit=crop&w=600&q=80');"></div>
-                <div class="workout-info">
-                    <h3>Cardio Endurance</h3>
-                    <div class="workout-stats">
-                        <span><i class="fa-regular fa-clock"></i> 25 mins</span>
-                        <span><i class="fa-solid fa-bolt"></i> 300 kcal</span>
-                    </div>
-                    <div class="workout-tags">
-                        <span class="tag tag-blue">Cardio</span>
-                        <span class="tag tag-yellow">Beginner</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="workout-card" data-loggable="1" data-name="Pilates Sculpt" data-duration="40" data-kcal="220" data-category="flexibility">
-                <div class="workout-img" style="background-image: url('https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=600&q=80');"></div>
-                <div class="workout-info">
-                    <h3>Pilates Sculpt</h3>
-                    <div class="workout-stats">
-                        <span><i class="fa-regular fa-clock"></i> 40 mins</span>
-                        <span><i class="fa-solid fa-bolt"></i> 220 kcal</span>
-                    </div>
-                    <div class="workout-tags">
-                        <span class="tag tag-blue">Yoga</span>
-                        <span class="tag tag-yellow">Intermediate</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="workout-card" data-loggable="1" data-name="Deadlift Technique" data-duration="60" data-kcal="450" data-category="strength">
-                <div class="workout-img" style="background-image: url('https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=600&q=80');"></div>
-                <div class="workout-info">
-                    <h3>Deadlift Technique</h3>
-                    <div class="workout-stats">
-                        <span><i class="fa-regular fa-clock"></i> 60 mins</span>
-                        <span><i class="fa-solid fa-bolt"></i> 450 kcal</span>
-                    </div>
-                    <div class="workout-tags">
-                        <span class="tag tag-blue">Strength</span>
-                        <span class="tag tag-yellow">Advanced</span>
-                    </div>
-                </div>
-            </div>
+            <?php endforeach; ?>
         <?php endif; ?>
 
     </div>
@@ -760,8 +831,7 @@ try {
 
     </aside>
 
-    </div>
-</div>
+    </div><!-- end .workouts-page-content -->
 
 <button class="fab fade-in delay-4" title="Log Custom Workout" id="openWorkoutModal">
     <i class="fa-solid fa-plus"></i>
@@ -791,11 +861,11 @@ try {
                         </select>
                     </div>
                     <div class="input-group">
-                        <label for="workoutIntensity">Intensity</label>
+                        <label for="workoutIntensity">Difficulty Level</label>
                         <select id="workoutIntensity" name="intensity">
-                            <option value="light">Light</option>
-                            <option value="moderate" selected>Moderate</option>
-                            <option value="vigorous">Vigorous</option>
+                            <option value="beginner">Beginner</option>
+                            <option value="intermediate" selected>Intermediate</option>
+                            <option value="advanced">Advanced</option>
                         </select>
                     </div>
                 </div>
@@ -814,6 +884,7 @@ try {
                     <textarea id="workoutNotes" name="notes" rows="3" maxlength="255" placeholder="Add any notes"></textarea>
                 </div>
                 <div class="modal-error" id="workoutError"></div>
+                <div class="modal-success" id="workoutSuccess" style="display:none;font-size:0.9rem;color:#16a34a;font-weight:600;padding:0.5rem 0;text-align:center;"></div>
                 <div class="modal-actions">
                     <button type="button" class="btn-modal-secondary" id="cancelWorkout">Cancel</button>
                     <button type="submit" class="btn-modal-primary" id="saveWorkout">Save Workout</button>
@@ -824,99 +895,142 @@ try {
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", () => {
-        setTimeout(() => {
-            const elements = document.querySelectorAll('.fade-in');
-            elements.forEach(el => el.classList.add('visible'));
-        }, 100);
+document.addEventListener('DOMContentLoaded', function() {
 
-        // Inject calculated PHP weekly active minutes data into JS
-        const weeklyData = {
-            1: <?php echo intval($weekly_data[1] ?? 0); ?>,
-            2: <?php echo intval($weekly_data[2] ?? 0); ?>,
-            3: <?php echo intval($weekly_data[3] ?? 0); ?>,
-            4: <?php echo intval($weekly_data[4] ?? 0); ?>,
-            5: <?php echo intval($weekly_data[5] ?? 0); ?>,
-            6: <?php echo intval($weekly_data[6] ?? 0); ?>,
-            7: <?php echo intval($weekly_data[7] ?? 0); ?>
-        };
+    // ── Fade-in animations ──
+    setTimeout(function() {
+        document.querySelectorAll('.fade-in').forEach(function(el) { el.classList.add('visible'); });
+    }, 100);
 
-        setTimeout(() => {
-            document.getElementById('barMon').style.height = `${weeklyData[1]}%`;
-            document.getElementById('barTue').style.height = `${weeklyData[2]}%`;
-            document.getElementById('barWed').style.height = `${weeklyData[3]}%`; 
-            document.getElementById('barThu').style.height = `${weeklyData[4]}%`;
-            document.getElementById('barFri').style.height = `${weeklyData[5]}%`;
-            document.getElementById('barSat').style.height = `${weeklyData[6]}%`;
-            document.getElementById('barSun').style.height = `${weeklyData[7]}%`;
-        }, 500);
+    // ── Weekly bar chart ──
+    var weeklyData = {
+        1: <?php echo intval($weekly_data[1] ?? 0); ?>,
+        2: <?php echo intval($weekly_data[2] ?? 0); ?>,
+        3: <?php echo intval($weekly_data[3] ?? 0); ?>,
+        4: <?php echo intval($weekly_data[4] ?? 0); ?>,
+        5: <?php echo intval($weekly_data[5] ?? 0); ?>,
+        6: <?php echo intval($weekly_data[6] ?? 0); ?>,
+        7: <?php echo intval($weekly_data[7] ?? 0); ?>
+    };
+    setTimeout(function() {
+        document.getElementById('barMon').style.height = weeklyData[1] + '%';
+        document.getElementById('barTue').style.height = weeklyData[2] + '%';
+        document.getElementById('barWed').style.height = weeklyData[3] + '%';
+        document.getElementById('barThu').style.height = weeklyData[4] + '%';
+        document.getElementById('barFri').style.height = weeklyData[5] + '%';
+        document.getElementById('barSat').style.height = weeklyData[6] + '%';
+        document.getElementById('barSun').style.height = weeklyData[7] + '%';
+    }, 500);
 
-        const loggableCards = document.querySelectorAll('.workout-card[data-loggable="1"]');
-        loggableCards.forEach(card => {
-            card.addEventListener('click', () => {
-                const name = card.dataset.name || 'Workout';
-                const duration = Number(card.dataset.duration || 30);
-                const kcal = Number(card.dataset.kcal || 0);
-                const category = card.dataset.category || 'cardio';
-                openWorkoutModal({ name, duration, kcal, category });
-            });
+    // ── Search & Filter ──
+    var searchInput = document.getElementById('workoutSearch');
+    var catFilter   = document.getElementById('catFilter');
+    var diffFilter  = document.getElementById('diffFilter');
+    var durFilter   = document.getElementById('durFilter');
+
+    function applyFilters() {
+        var query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+        var cat   = (catFilter  && catFilter.selectedIndex  > 0) ? catFilter.value.toLowerCase()  : '';
+        var diff  = (diffFilter && diffFilter.selectedIndex > 0) ? diffFilter.value.toLowerCase() : '';
+        var dur   = (durFilter  && durFilter.selectedIndex  > 0) ? durFilter.value : '';
+        var anyVisible = false;
+
+        document.querySelectorAll('.workout-card').forEach(function(card) {
+            var name     = (card.querySelector('h3') ? card.querySelector('h3').textContent : '').toLowerCase();
+            var cardCat  = (card.dataset.category   || '').toLowerCase();
+            var cardDiff = (card.dataset.difficulty || '').toLowerCase();
+            var mins     = Number(card.dataset.duration || 0);
+            var show = true;
+
+            if (query && name.indexOf(query) === -1) show = false;
+            if (cat) {
+                var catMap = { strength:'strength', cardio:'cardio', yoga:'flexibility' };
+                if (cardCat !== (catMap[cat] || cat)) show = false;
+            }
+            if (diff && cardDiff && cardDiff.indexOf(diff) === -1) show = false;
+            if (dur === '< 30 mins'    && mins >= 30) show = false;
+            if (dur === '30 - 45 mins' && (mins < 30 || mins > 45)) show = false;
+            if (dur === '45+ mins'     && mins <= 45) show = false;
+
+            card.style.display = show ? '' : 'none';
+            if (show) anyVisible = true;
         });
-    });
 
-    // Workout Modal + AJAX logging
-    const workoutModal = document.getElementById('workoutModal');
-    const workoutForm = document.getElementById('workoutForm');
-    const workoutError = document.getElementById('workoutError');
-    const saveWorkoutBtn = document.getElementById('saveWorkout');
-    const openWorkoutBtn = document.getElementById('openWorkoutModal');
+        var noRes = document.getElementById('noWorkoutsMsg');
+        if (!anyVisible) {
+            if (!noRes) {
+                noRes = document.createElement('p');
+                noRes.id = 'noWorkoutsMsg';
+                noRes.style.cssText = 'color:var(--text-medium);padding:2rem;text-align:center;grid-column:1/-1;';
+                noRes.textContent = 'No workouts match your filters.';
+                document.querySelector('.workouts-grid').appendChild(noRes);
+            }
+        } else if (noRes) { noRes.remove(); }
+    }
 
-    function openWorkoutModal(prefill = {}) {
+    if (searchInput) searchInput.addEventListener('input', applyFilters);
+    if (catFilter)   catFilter.addEventListener('change', applyFilters);
+    if (diffFilter)  diffFilter.addEventListener('change', applyFilters);
+    if (durFilter)   durFilter.addEventListener('change', applyFilters);
+
+    // ── Modal ──
+    var workoutModal   = document.getElementById('workoutModal');
+    var workoutForm    = document.getElementById('workoutForm');
+    var workoutError   = document.getElementById('workoutError');
+    var saveWorkoutBtn = document.getElementById('saveWorkout');
+    var openWorkoutBtn = document.getElementById('openWorkoutModal');
+
+    function openModal(prefill) {
+        prefill = prefill || {};
         workoutForm.reset();
-        document.getElementById('workoutName').value = prefill.name || '';
+        document.getElementById('workoutName').value     = prefill.name     || '';
         document.getElementById('workoutDuration').value = prefill.duration || '';
-        document.getElementById('workoutKcal').value = prefill.kcal || '';
-        document.getElementById('workoutType').value = prefill.category || 'cardio';
+        document.getElementById('workoutKcal').value     = prefill.kcal     || '';
+        document.getElementById('workoutType').value     = prefill.category || 'cardio';
         workoutError.textContent = '';
+        var successEl = document.getElementById('workoutSuccess');
+        if (successEl) { successEl.style.display = 'none'; successEl.textContent = ''; }
         workoutModal.classList.add('active');
         document.getElementById('workoutName').focus();
     }
 
-    function closeWorkoutModal() {
-        workoutModal.classList.remove('active');
-    }
+    function closeModal() { workoutModal.classList.remove('active'); }
 
-    openWorkoutBtn.addEventListener('click', () => openWorkoutModal());
-    document.getElementById('closeWorkoutModal').addEventListener('click', closeWorkoutModal);
-    document.getElementById('cancelWorkout').addEventListener('click', closeWorkoutModal);
-
-    workoutModal.addEventListener('click', (event) => {
-        if (event.target === workoutModal) {
-            closeWorkoutModal();
-        }
+    // Wire existing cards
+    document.querySelectorAll('.workout-card[data-loggable="1"]').forEach(function(card) {
+        card.addEventListener('click', function() {
+            openModal({ name: card.dataset.name, duration: card.dataset.duration, kcal: card.dataset.kcal, category: card.dataset.category });
+        });
     });
 
-    workoutForm.addEventListener('submit', (event) => {
-        event.preventDefault();
-        if (saveWorkoutBtn.disabled) {
-            return;
-        }
+    if (openWorkoutBtn) openWorkoutBtn.addEventListener('click', function() { openModal(); });
+    document.getElementById('closeWorkoutModal').addEventListener('click', closeModal);
+    document.getElementById('cancelWorkout').addEventListener('click', closeModal);
+    workoutModal.addEventListener('click', function(e) { if (e.target === workoutModal) closeModal(); });
+
+    // ── Submit — matches exact pattern from nutrition.php ──
+    workoutForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        if (saveWorkoutBtn.disabled) return;
 
         workoutError.textContent = '';
-        saveWorkoutBtn.disabled = true;
+        var successEl = document.getElementById('workoutSuccess');
+        if (successEl) successEl.style.display = 'none';
+        saveWorkoutBtn.disabled    = true;
         saveWorkoutBtn.textContent = 'Saving...';
 
-        const payload = {
+        var payload = {
             exercise_name: document.getElementById('workoutName').value.trim(),
             exercise_type: document.getElementById('workoutType').value,
             duration_mins: Number(document.getElementById('workoutDuration').value),
-            intensity: document.getElementById('workoutIntensity').value,
-            kcal_burned: Number(document.getElementById('workoutKcal').value || 0),
-            notes: document.getElementById('workoutNotes').value.trim()
+            intensity:     document.getElementById('workoutIntensity').value,
+            kcal_burned:   Number(document.getElementById('workoutKcal').value || 0),
+            notes:         document.getElementById('workoutNotes').value.trim()
         };
 
         if (!payload.exercise_name || payload.duration_mins <= 0) {
-            workoutError.textContent = 'Please enter a workout name and duration.';
-            saveWorkoutBtn.disabled = false;
+            workoutError.textContent   = 'Please enter a workout name and duration.';
+            saveWorkoutBtn.disabled    = false;
             saveWorkoutBtn.textContent = 'Save Workout';
             return;
         }
@@ -925,36 +1039,78 @@ try {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-Token': '<?php echo htmlspecialchars($_SESSION["csrf_token"] ?? "", ENT_QUOTES, "UTF-8"); ?>'
+                'X-CSRF-Token': getCsrf()
             },
             body: JSON.stringify(payload)
         })
         .then(res => res.json())
-        .then(data => {
+        .then(function(data) {
             if (!data.success) {
                 workoutError.textContent = data.error || 'Unable to save workout.';
                 return;
             }
 
-            const todayIndex = new Date().getDay();
-            const mappedIndex = todayIndex === 0 ? 7 : todayIndex;
-            const currentBar = document.getElementById(`bar${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][mappedIndex - 1]}`);
-            if (currentBar) {
-                const currentHeight = parseFloat(currentBar.style.height || '0');
-                const addedHeight = Math.min(100, Math.round((payload.duration_mins / 60) * 100));
-                currentBar.style.height = `${Math.min(100, currentHeight + addedHeight)}%`;
+            // Update CSRF token in meta tag
+            if (data.csrf_token) {
+                var meta = document.querySelector('meta[name="csrf-token"]');
+                if (meta) meta.setAttribute('content', data.csrf_token);
             }
 
-            closeWorkoutModal();
+            // Update bar chart for today
+            var days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+            var bar  = document.getElementById('bar' + days[new Date().getDay()]);
+            if (bar) bar.style.height = Math.min(100, parseFloat(bar.style.height || '0') + Math.round((payload.duration_mins / 60) * 100)) + '%';
+
+            // Add new card to grid
+            var colors = { cardio:'#60a5fa', strength:'#3b82f6', flexibility:'#2563eb', sports:'#3b82f6' };
+            var icons  = { cardio:'fa-person-running', strength:'fa-dumbbell', flexibility:'fa-spa', sports:'fa-futbol' };
+            var grid   = document.querySelector('.workouts-grid');
+            if (grid) {
+                var kcalLogged = (data.logged_workout && data.logged_workout.kcal_burned) || 0;
+                var c = document.createElement('div');
+                c.className = 'workout-card';
+                c.dataset.loggable  = '1';
+                c.dataset.name      = payload.exercise_name;
+                c.dataset.duration  = payload.duration_mins;
+                c.dataset.category  = payload.exercise_type;
+                c.dataset.kcal      = kcalLogged;
+                c.dataset.difficulty = payload.intensity;
+                c.innerHTML =
+                    '<div class="workout-card-header" style="background:' + (colors[payload.exercise_type] || '#3b82f6') + '">' +
+                        '<i class="fa-solid ' + (icons[payload.exercise_type] || 'fa-dumbbell') + '"></i>' +
+                    '</div>' +
+                    '<div class="workout-info">' +
+                        '<h3>' + payload.exercise_name.replace(/</g, '&lt;') + '</h3>' +
+                        '<div class="workout-stats">' +
+                            '<span><i class="fa-regular fa-clock"></i> ' + payload.duration_mins + ' mins</span>' +
+                            '<span><i class="fa-solid fa-bolt"></i> ' + kcalLogged + ' kcal</span>' +
+                        '</div>' +
+                        '<div class="workout-tags"><span class="tag tag-blue">' + payload.exercise_type + '</span></div>' +
+                    '</div>';
+                c.addEventListener('click', function() {
+                    openModal({ name: payload.exercise_name, duration: payload.duration_mins, kcal: kcalLogged, category: payload.exercise_type });
+                });
+                grid.prepend(c);
+            }
+
+            // Show success feedback
+            if (successEl) {
+                successEl.textContent = '✅ ' + payload.exercise_name + ' logged successfully!';
+                successEl.style.display = 'block';
+            }
+            showToast(payload.exercise_name + ' logged successfully!');
+            setTimeout(closeModal, 1200);
         })
-        .catch(() => {
+        .catch(function() {
             workoutError.textContent = 'A network error occurred. Please try again.';
         })
-        .finally(() => {
-            saveWorkoutBtn.disabled = false;
+        .finally(function() {
+            saveWorkoutBtn.disabled    = false;
             saveWorkoutBtn.textContent = 'Save Workout';
         });
     });
+
+});
 </script>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

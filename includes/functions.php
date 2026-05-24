@@ -37,8 +37,9 @@ function verify_csrf_ajax()
 {
     $token = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
     if (empty($_SESSION['csrf_token']) || $token === '' || !hash_equals((string) $_SESSION['csrf_token'], (string) $token)) {
+        header('Content-Type: application/json');
         http_response_code(403);
-        die(json_encode(['error' => 'Invalid CSRF token.']));
+        die(json_encode(['success' => false, 'error' => 'Session expired. Please refresh the page.']));
     }
 }
 

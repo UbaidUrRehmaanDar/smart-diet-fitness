@@ -76,12 +76,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             persist_onboarding_profile_step1($pdo, $user_id, $_SESSION['onboard']);
             $_SESSION['user_name'] = trim($first_name . ' ' . $last_name);
+            
+            // 🔧 Handle optional profile picture upload
+            if (!empty($_FILES['profile_picture']['tmp_name'])) {
+                $err = null;
+                $uploaded = process_profile_avatar_upload($user_id, $profile['profile_picture'] ?? null, $_FILES['profile_picture'], $err);
+                if ($err) {
+                    $errors[] = $err;
+                } elseif ($uploaded) {
+                    $stmt = $pdo->prepare('UPDATE profiles SET profile_picture = ? WHERE user_id = ?');
+                    $stmt->execute([$uploaded, $user_id]);
+                }
+            }
         } catch (PDOException $e) {
             error_log('Onboarding step1 persist: ' . $e->getMessage());
         }
 
-        header("Location: step2.php");
-        exit;
+        if (empty($errors)) {
+            header("Location: step2.php");
+            exit;
+        }
     }
 }
 
@@ -113,7 +127,7 @@ $page_title = 'Profile Setup - ' . APP_NAME;
             --input-bg: #f0f5ff;
             --bg-right: #ffffff;
             --border-light: #e5edf9;
-            --success-green: #10b981;
+            --success-green: #3b82f6;
             
             --btn-gradient: linear-gradient(135deg, #4d8df5 0%, #3470e8 100%);
             --btn-gradient-hover: linear-gradient(135deg, #3d7bf4 0%, #2056c7 100%);
@@ -355,13 +369,13 @@ $page_title = 'Profile Setup - ' . APP_NAME;
 
         .btn {
             flex: 1;
-            padding: 1rem;
+            padding: 0.85rem 1.4rem;
             border: none;
             border-radius: 50px;
             font-weight: 600;
             font-size: 0.95rem;
             cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            transition: background 0.3s ease, border-radius 0.3s ease, border-color 0.3s ease, color 0.3s ease;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
@@ -372,13 +386,11 @@ $page_title = 'Profile Setup - ' . APP_NAME;
         .btn-primary {
             background: var(--btn-gradient);
             color: white;
-            box-shadow: 0 4px 15px rgba(61, 123, 244, 0.3);
         }
 
         .btn-primary:hover {
             background: var(--btn-gradient-hover);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(61, 123, 244, 0.4);
+            border-radius: 12px;
         }
 
         .btn-secondary {
@@ -391,6 +403,7 @@ $page_title = 'Profile Setup - ' . APP_NAME;
             border-color: var(--primary-blue);
             color: var(--primary-blue);
             background-color: var(--input-bg);
+            border-radius: 12px;
         }
 
         /* Responsive */
@@ -460,8 +473,32 @@ $page_title = 'Profile Setup - ' . APP_NAME;
         <?php endif; ?>
 
         <!-- Form -->
-        <form method="POST" action="" novalidate>
+        <form method="POST" action="" enctype="multipart/form-data" novalidate>
             <?php echo csrf_field(); ?>
+            
+            <!-- Profile Picture with live preview -->
+            <div class="form-group" style="text-align: center; margin-bottom: 2rem;">
+                <label style="margin-bottom: 1rem;">Profile Photo <span style="color: var(--text-medium); font-weight: normal;">(Optional)</span></label>
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 0.75rem;">
+                    <!-- Live preview circle -->
+                    <div id="avatarPreviewCircle" style="width:90px;height:90px;border-radius:50%;overflow:hidden;background:var(--input-bg);border:3px solid var(--border-light);display:flex;align-items:center;justify-content:center;font-size:2rem;color:var(--text-medium);">
+                        <?php
+                        $existing_pic_step1 = $profile['profile_picture'] ?? null;
+                        if ($existing_pic_step1):
+                            $existing_url = avatar_public_url($existing_pic_step1);
+                        ?>
+                            <img src="<?php echo htmlspecialchars($existing_url, ENT_QUOTES, 'UTF-8'); ?>" alt="" style="width:100%;height:100%;object-fit:cover;display:block;">
+                        <?php else: ?>
+                            <i class="fa-solid fa-user"></i>
+                        <?php endif; ?>
+                    </div>
+                    <label style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.6rem 1.2rem;background:var(--input-bg);color:var(--primary-blue);border:2px dashed var(--primary-blue);border-radius:8px;cursor:pointer;font-size:0.85rem;font-weight:600;">
+                        <i class="fa-solid fa-camera"></i> Choose Photo
+                        <input type="file" name="profile_picture" id="step1PicInput" accept="image/jpeg,image/png,image/webp" style="display:none;">
+                    </label>
+                    <span id="step1-file-info" style="font-size:0.75rem;color:var(--text-medium);">JPEG, PNG or WebP · max 2 MB</span>
+                </div>
+            </div>
             
             <!-- Name (Pre-filled from signup) -->
             <div class="form-row">
@@ -489,27 +526,59 @@ $page_title = 'Profile Setup - ' . APP_NAME;
                 </div>
             </div>
 
-            <!-- Date of Birth -->
+            <!-- Date of Birth — 3 separate fields -->
             <div class="form-group">
-                <label for="date_of_birth">Date of Birth <span>*</span></label>
-                <input
-                    type="date"
-                    id="date_of_birth"
-                    name="date_of_birth"
-                    value="<?php echo htmlspecialchars($step_data['date_of_birth'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
-                    required
-                >
+                <label>Date of Birth <span>*</span></label>
+                <?php
+                $dob_val = $step_data['date_of_birth'] ?? '';
+                $dob_parts = $dob_val ? explode('-', $dob_val) : ['', '', ''];
+                $dob_year  = $dob_parts[0] ?? '';
+                $dob_month = isset($dob_parts[1]) ? ltrim($dob_parts[1], '0') : '';
+                $dob_day   = isset($dob_parts[2]) ? ltrim($dob_parts[2], '0') : '';
+                ?>
+                <!-- Hidden field that gets assembled by JS -->
+                <input type="hidden" id="date_of_birth" name="date_of_birth" value="<?php echo htmlspecialchars($dob_val, ENT_QUOTES, 'UTF-8'); ?>">
+                <div style="display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:0.75rem;">
+                    <div>
+                        <input type="number" id="dob_day" placeholder="Day" min="1" max="31"
+                               value="<?php echo htmlspecialchars($dob_day, ENT_QUOTES, 'UTF-8'); ?>"
+                               style="text-align:center;" oninput="assembleDOB()">
+                        <small style="display:block;text-align:center;color:var(--text-light);font-size:0.72rem;margin-top:0.25rem;">Day</small>
+                    </div>
+                    <div>
+                        <input type="number" id="dob_month" placeholder="Month" min="1" max="12"
+                               value="<?php echo htmlspecialchars($dob_month, ENT_QUOTES, 'UTF-8'); ?>"
+                               style="text-align:center;" oninput="assembleDOB()">
+                        <small style="display:block;text-align:center;color:var(--text-light);font-size:0.72rem;margin-top:0.25rem;">Month</small>
+                    </div>
+                    <div>
+                        <input type="number" id="dob_year" placeholder="Year" min="1900" max="<?php echo date('Y') - 5; ?>"
+                               value="<?php echo htmlspecialchars($dob_year, ENT_QUOTES, 'UTF-8'); ?>"
+                               style="text-align:center;" oninput="assembleDOB()">
+                        <small style="display:block;text-align:center;color:var(--text-light);font-size:0.72rem;margin-top:0.25rem;">Year</small>
+                    </div>
+                </div>
+                <p class="field-hint" id="dob_error" style="font-size:0.78rem;color:#ef4444;margin-top:0.3rem;font-weight:600;display:none;"></p>
             </div>
 
-            <!-- Gender -->
+            <!-- Gender — styled card buttons -->
             <div class="form-group">
-                <label for="gender">Gender <span>*</span></label>
-                <select id="gender" name="gender" required>
-                    <option value="">Select Gender</option>
-                    <option value="male" <?php echo ($step_data['gender'] ?? '') === 'male' ? 'selected' : ''; ?>>Male</option>
-                    <option value="female" <?php echo ($step_data['gender'] ?? '') === 'female' ? 'selected' : ''; ?>>Female</option>
-                    <option value="other" <?php echo ($step_data['gender'] ?? '') === 'other' ? 'selected' : ''; ?>>Other</option>
-                </select>
+                <label>Gender <span>*</span></label>
+                <?php $sel_gender = $step_data['gender'] ?? ''; ?>
+                <input type="hidden" id="gender" name="gender" value="<?php echo htmlspecialchars($sel_gender, ENT_QUOTES, 'UTF-8'); ?>">
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem;">
+                    <?php foreach ([['male','Male','fa-mars'],['female','Female','fa-venus'],['other','Other','fa-genderless']] as [$val,$lbl,$icon]): ?>
+                    <label class="gender-card <?php echo $sel_gender === $val ? 'selected' : ''; ?>"
+                           style="display:flex;flex-direction:column;align-items:center;gap:0.5rem;padding:1rem 0.5rem;border:2px solid var(--border-light);border-radius:14px;cursor:pointer;transition:all 0.25s;background:var(--bg-right);text-align:center;">
+                        <input type="radio" name="_gender_radio" value="<?php echo $val; ?>"
+                               <?php echo $sel_gender === $val ? 'checked' : ''; ?>
+                               style="display:none;" onchange="selectGender('<?php echo $val; ?>')">
+                        <i class="fa-solid <?php echo $icon; ?>" style="font-size:1.5rem;color:var(--text-light);transition:color 0.25s;"></i>
+                        <span style="font-size:0.85rem;font-weight:700;color:var(--text-dark);"><?php echo $lbl; ?></span>
+                    </label>
+                    <?php endforeach; ?>
+                </div>
+                <p class="field-hint" id="gender_error" style="font-size:0.78rem;color:#ef4444;margin-top:0.3rem;font-weight:600;display:none;">Please select a gender.</p>
             </div>
 
             <!-- Height & Weight -->
@@ -568,5 +637,144 @@ $page_title = 'Profile Setup - ' . APP_NAME;
             </div>
         </form>
     </div>
+
+    <script>
+        // ── Gender card selection ──────────────────────────────────────────
+        function selectGender(val) {
+            document.getElementById('gender').value = val;
+            document.querySelectorAll('.gender-card').forEach(card => {
+                const radio = card.querySelector('input[type="radio"]');
+                const icon  = card.querySelector('i');
+                if (radio && radio.value === val) {
+                    card.style.borderColor = 'var(--primary-blue)';
+                    card.style.background  = 'var(--input-bg)';
+                    if (icon) icon.style.color = 'var(--primary-blue)';
+                } else {
+                    card.style.borderColor = 'var(--border-light)';
+                    card.style.background  = 'var(--bg-right)';
+                    if (icon) icon.style.color = 'var(--text-light)';
+                }
+            });
+            const errEl = document.getElementById('gender_error');
+            if (errEl) errEl.style.display = 'none';
+        }
+
+        // Apply selected state on page load (for back-navigation)
+        document.addEventListener('DOMContentLoaded', () => {
+            const saved = document.getElementById('gender').value;
+            if (saved) selectGender(saved);
+        });
+
+        // ── Assemble DOB from 3 fields ─────────────────────────────────────
+        function assembleDOB() {
+            const d = document.getElementById('dob_day').value.trim();
+            const m = document.getElementById('dob_month').value.trim();
+            const y = document.getElementById('dob_year').value.trim();
+            const hidden = document.getElementById('date_of_birth');
+            if (d && m && y && y.length === 4) {
+                const dd = d.padStart(2, '0');
+                const mm = m.padStart(2, '0');
+                hidden.value = `${y}-${mm}-${dd}`;
+            } else {
+                hidden.value = '';
+            }
+        }
+
+        // ── Avatar live preview ────────────────────────────────────────────
+        const step1PicInput = document.getElementById('step1PicInput');
+        if (step1PicInput) {
+            step1PicInput.addEventListener('change', function() {
+                const file = this.files[0];
+                if (!file) return;
+                document.getElementById('step1-file-info').textContent = file.name + ' selected.';
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const circle = document.getElementById('avatarPreviewCircle');
+                    circle.innerHTML = `<img src="${e.target.result}" alt="" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:50%;">`;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // ── Inline validation ──────────────────────────────────────────────
+        function showFieldError(inputEl, msg) {
+            if (!inputEl) return;
+            inputEl.style.borderColor = '#ef4444';
+            let hint = inputEl.parentElement.querySelector('.field-hint');
+            if (!hint) {
+                hint = document.createElement('p');
+                hint.className = 'field-hint';
+                hint.style.cssText = 'font-size:0.78rem;color:#ef4444;margin-top:0.3rem;font-weight:600;';
+                inputEl.parentElement.appendChild(hint);
+            }
+            hint.textContent = msg;
+        }
+        function clearFieldError(inputEl) {
+            if (!inputEl) return;
+            inputEl.style.borderColor = '';
+            const hint = inputEl.parentElement.querySelector('.field-hint');
+            if (hint) hint.remove();
+        }
+
+        document.getElementById('first_name').addEventListener('blur', function() {
+            this.value.trim() ? clearFieldError(this) : showFieldError(this, 'First name is required.');
+        });
+        document.getElementById('last_name').addEventListener('blur', function() {
+            this.value.trim() ? clearFieldError(this) : showFieldError(this, 'Last name is required.');
+        });
+        document.getElementById('height_cm').addEventListener('blur', function() {
+            const v = parseFloat(this.value);
+            (v >= 100 && v <= 250) ? clearFieldError(this) : showFieldError(this, 'Height must be 100–250 cm.');
+        });
+        document.getElementById('current_weight_kg').addEventListener('blur', function() {
+            const v = parseFloat(this.value);
+            (v >= 20 && v <= 300) ? clearFieldError(this) : showFieldError(this, 'Weight must be 20–300 kg.');
+        });
+        document.getElementById('target_weight_kg').addEventListener('blur', function() {
+            const v = parseFloat(this.value);
+            (v >= 20 && v <= 300) ? clearFieldError(this) : showFieldError(this, 'Target weight must be 20–300 kg.');
+        });
+
+        ['first_name','last_name','height_cm','current_weight_kg','target_weight_kg'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('input', () => clearFieldError(el));
+        });
+
+        // Validate DOB on submit
+        document.querySelector('form').addEventListener('submit', function(e) {
+            assembleDOB();
+            let valid = true;
+
+            // Gender check
+            const genderVal = document.getElementById('gender').value;
+            const genderErr = document.getElementById('gender_error');
+            if (!genderVal) {
+                genderErr.style.display = 'block';
+                valid = false;
+            } else {
+                genderErr.style.display = 'none';
+            }
+
+            // DOB check
+            const dob = document.getElementById('date_of_birth').value;
+            const errEl = document.getElementById('dob_error');
+            if (!dob) {
+                errEl.textContent = 'Please enter a valid date of birth.';
+                errEl.style.display = 'block';
+                valid = false;
+            } else {
+                const age = (new Date() - new Date(dob)) / (365.25 * 24 * 3600 * 1000);
+                if (age < 5 || age > 120) {
+                    errEl.textContent = 'Please enter a valid date of birth.';
+                    errEl.style.display = 'block';
+                    valid = false;
+                } else {
+                    errEl.style.display = 'none';
+                }
+            }
+
+            if (!valid) e.preventDefault();
+        });
+    </script>
 </body>
 </html>

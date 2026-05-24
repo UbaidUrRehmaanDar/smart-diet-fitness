@@ -15,6 +15,21 @@ if (!defined('APP_NAME')) {
 // // 🔧 Avoid PHP built-in name collision (get_current_user()).
 $current_user = is_logged_in() ? get_current_user_profile() : null;
 
+// Resolve theme preference (light | dark) for the current user
+$_app_theme = 'light';
+if (is_logged_in()) {
+    try {
+        $__t = $pdo->prepare('SELECT theme FROM preferences WHERE user_id = ? LIMIT 1');
+        $__t->execute([get_user_id()]);
+        $__row = $__t->fetch();
+        if ($__row && in_array($__row['theme'], ['light', 'dark'], true)) {
+            $_app_theme = $__row['theme'];
+        }
+    } catch (PDOException $e) {
+        // fallback to light
+    }
+}
+
 // Determine active navigation link
 $current_page = basename($_SERVER['PHP_SELF'], '.php');
 
@@ -40,9 +55,16 @@ $active_nav = $nav_map[$current_page] ?? '';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Smart Diet & Fitness Recommendation System - Your personal nutrition and fitness coach">
     <meta name="theme-color" content="#3d7bf4">
+    <?php if (is_logged_in()): ?>
+    <meta name="csrf-token" content="<?php echo htmlspecialchars($_SESSION['csrf_token'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
+    <?php endif; ?>
     <title><?php echo htmlspecialchars($page_title ?? APP_NAME); ?></title>
+    <!-- Dark mode applied before render to prevent flash -->
+    <?php if ($_app_theme === 'dark'): ?>
+    <style>:root{color-scheme:dark}</style>
+    <?php endif; ?>
 
-    <!-- Preconnect for faster font loading -->
+    <!-- Inter Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     
@@ -52,7 +74,10 @@ $active_nav = $nav_map[$current_page] ?? '';
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Common Styles (from original frontend) -->
+    <!-- Global Stylesheet -->
+    <link rel="stylesheet" href="<?php echo APP_URL; ?>/assets/css/global.css">
+
+    <!-- Common Styles (navbar, layout — variables defined in global.css) -->
     <style>
         :root {
             --bg-body: #f4f7fb;
@@ -67,10 +92,75 @@ $active_nav = $nav_map[$current_page] ?? '';
             --accent-yellow: #fde047;
             --accent-orange: #f59e0b;
             --accent-red: #ef4444;
-            --accent-green: #10b981;
+            --accent-green: #3b82f6;
+            --success-green: #3b82f6;
+            --warning-gold: #f59e0b;
 
-            --btn-gradient: linear-gradient(135deg, #4d8df5 0%, #3470e8 100%);
-            --btn-gradient-hover: linear-gradient(135deg, #3d7bf4 0%, #2056c7 100%);
+            --btn-primary: #3b82f6;
+            --btn-primary-hover: #2563eb;
+        }
+
+        /* ── Dark Mode ── */
+        [data-theme="dark"] {
+            --bg-body: #0f1117;
+            --text-dark: #e2e8f0;
+            --text-medium: #94a3b8;
+            --text-light: #64748b;
+            --primary-blue: #60a5fa;
+            --primary-blue-hover: #93c5fd;
+            --input-bg: #1e2535;
+            --bg-right: #161b27;
+            --border-light: #2d3748;
+            --accent-yellow: #fde047;
+            --accent-orange: #f59e0b;
+            --accent-red: #f87171;
+            --accent-green: #60a5fa;
+            --success-green: #60a5fa;
+            --warning-gold: #fbbf24;
+
+            --btn-primary: #60a5fa;
+            --btn-primary-hover: #3b82f6;
+        }
+
+        [data-theme="dark"] .navbar,
+        [data-theme="dark"] .card,
+        [data-theme="dark"] .side-card,
+        [data-theme="dark"] .meal-modal,
+        [data-theme="dark"] .workout-modal,
+        [data-theme="dark"] .progress-modal,
+        [data-theme="dark"] .confirm-modal,
+        [data-theme="dark"] .notifications-card {
+            background-color: var(--bg-right);
+            color: var(--text-dark);
+        }
+
+        [data-theme="dark"] .navbar {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        [data-theme="dark"] input,
+        [data-theme="dark"] select,
+        [data-theme="dark"] textarea {
+            background-color: var(--input-bg) !important;
+            color: var(--text-dark) !important;
+            border-color: var(--border-light) !important;
+        }
+
+        [data-theme="dark"] .user-avatar {
+            background-color: #2d3748;
+            color: var(--primary-blue);
+            border-color: var(--border-light);
+        }
+
+        [data-theme="dark"] .dropdown-content {
+            background-color: var(--bg-right);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+        }
+
+        [data-theme="dark"] .toast {
+            background-color: var(--bg-right);
+            border-color: var(--border-light);
+            color: var(--text-dark);
         }
 
         * {
@@ -196,6 +286,7 @@ $active_nav = $nav_map[$current_page] ?? '';
             box-shadow: 0 0 0 2px var(--primary-blue);
         }
 
+        /* Navbar icon buttons */
         .icon-btn {
             background: none;
             border: none;
@@ -205,10 +296,7 @@ $active_nav = $nav_map[$current_page] ?? '';
             transition: color 0.3s ease;
             position: relative;
         }
-
-        .icon-btn:hover {
-            color: var(--primary-blue);
-        }
+        .icon-btn:hover { color: var(--primary-blue); }
 
         .notification-badge {
             position: absolute;
@@ -227,8 +315,8 @@ $active_nav = $nav_map[$current_page] ?? '';
         }
 
         .user-avatar {
-            width: 40px;
-            height: 40px;
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
             background-color: var(--accent-yellow);
             display: flex;
@@ -238,13 +326,15 @@ $active_nav = $nav_map[$current_page] ?? '';
             font-weight: 700;
             border: 2px solid var(--border-light);
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: border-color 0.3s ease;
             font-size: 0.9rem;
             text-decoration: none;
+            overflow: hidden;
+            flex-shrink: 0;
         }
 
         .user-avatar:hover {
-            box-shadow: 0 4px 12px rgba(61, 123, 244, 0.2);
+            border-color: var(--primary-blue);
         }
 
         .user-avatar img {
@@ -253,6 +343,8 @@ $active_nav = $nav_map[$current_page] ?? '';
             object-fit: cover;
             border-radius: 50%;
             display: block;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
         }
 
         /* User Dropdown Menu */
@@ -326,7 +418,7 @@ $active_nav = $nav_map[$current_page] ?? '';
         }
     </style>
 </head>
-<body>
+<body data-theme="<?php echo htmlspecialchars($_app_theme, ENT_QUOTES, 'UTF-8'); ?>">
     <!-- Navigation Bar -->
     <nav class="navbar">
         <div class="nav-left">
@@ -348,6 +440,11 @@ $active_nav = $nav_map[$current_page] ?? '';
 
         <div class="nav-right">
             <?php if (is_logged_in()): ?>
+                <!-- Theme Toggle -->
+                <button class="icon-btn" id="themeToggleBtn" title="Toggle theme" aria-label="Toggle dark/light mode">
+                    <i class="fas <?php echo $_app_theme === 'dark' ? 'fa-sun' : 'fa-moon'; ?>" id="themeToggleIcon"></i>
+                </button>
+
                 <!-- Notification Bell -->
                 <button class="icon-btn" id="notification-btn" title="Notifications">
                     <i class="fas fa-bell"></i>
@@ -404,7 +501,7 @@ $active_nav = $nav_map[$current_page] ?? '';
             default => '#dbeafe'
         };
         $text_color = match($flash['type']) {
-            'success' => '#065f46',
+            'success' => '#1e40af',
             'error' => '#7f1d1d',
             'warning' => '#92400e',
             'info' => '#1e40af',

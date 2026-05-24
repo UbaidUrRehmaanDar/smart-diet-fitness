@@ -425,13 +425,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .btn-submit:hover {
             background: var(--btn-gradient-hover);
             border-radius: 12px;
-            box-shadow: 0 8px 25px rgba(61, 123, 244, 0.4);
-            transform: translateY(-2px);
         }
 
         .btn-submit:active {
-            transform: translateY(0);
-            box-shadow: 0 2px 10px rgba(61, 123, 244, 0.3);
+            background: var(--btn-gradient);
         }
 
         .signup-link {
@@ -518,9 +515,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         .success-message {
-            background-color: #d1fae5;
-            border: 1px solid #10b981;
-            color: #065f46;
+            background-color: #dbeafe;
+            border: 1px solid #3b82f6;
+            color: #1e40af;
             padding: 0.75rem 1rem;
             border-radius: 8px;
             margin-bottom: 1.25rem;
@@ -587,7 +584,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 <?php endif; ?>
 
-                <form method="POST" action="login.php" id="loginForm">
+                <form method="POST" action="login.php" id="loginForm" novalidate>
                     <?php echo csrf_field(); ?>
 
                     <div class="input-group fade-in delay-1">
@@ -629,13 +626,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         document.addEventListener("DOMContentLoaded", () => {
             setTimeout(() => {
                 const elements = document.querySelectorAll('.fade-in');
-                elements.forEach(el => {
-                    el.classList.add('visible');
-                });
+                elements.forEach(el => { el.classList.add('visible'); });
             }, 100);
+
+            // ── Inline email validation ────────────────────────────────────
+            const emailInput = document.querySelector('input[name="email"]');
+            if (emailInput) {
+                function emailErr(msg) {
+                    emailInput.style.borderColor = '#ef4444';
+                    emailInput.style.backgroundColor = '#fff';
+                    let err = emailInput.parentElement.querySelector('.inline-err');
+                    if (!err) {
+                        err = document.createElement('p');
+                        err.className = 'inline-err';
+                        err.style.cssText = 'font-size:0.78rem;color:#ef4444;font-weight:600;margin-top:0.35rem;';
+                        emailInput.parentElement.appendChild(err);
+                    }
+                    err.textContent = msg;
+                }
+                function emailOk() {
+                    emailInput.style.borderColor = '';
+                    emailInput.style.backgroundColor = '';
+                    const err = emailInput.parentElement.querySelector('.inline-err');
+                    if (err) err.remove();
+                }
+                emailInput.addEventListener('blur', () => {
+                    const v = emailInput.value.trim();
+                    if (!v) { emailErr('Email is required.'); return; }
+                    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) { emailErr('Enter a valid email address.'); return; }
+                    emailOk();
+                });
+                emailInput.addEventListener('input', () => {
+                    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value.trim())) emailOk();
+                });
+            }
         });
 
-        // Function to toggle password visibility
         function togglePassword(inputId, icon) {
             const input = document.getElementById(inputId);
             if (input.type === "password") {

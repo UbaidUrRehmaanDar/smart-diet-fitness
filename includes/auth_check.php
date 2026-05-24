@@ -32,9 +32,13 @@ if (!$in_onboarding && user_needs_onboarding()) {
     exit;
 }
 
-// Regenerate session ID periodically for security
+// Regenerate session ID periodically for security (preserve CSRF token across regeneration)
 if (!isset($_SESSION['session_regenerated']) || time() - $_SESSION['session_regenerated'] > 300) {
+    $csrf_backup = $_SESSION['csrf_token'] ?? null;
     session_regenerate_id(true);
+    if ($csrf_backup !== null) {
+        $_SESSION['csrf_token'] = $csrf_backup;
+    }
     $_SESSION['session_regenerated'] = time();
 }
 ?>

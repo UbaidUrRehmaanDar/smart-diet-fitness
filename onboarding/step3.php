@@ -269,7 +269,7 @@ $page_title = 'Fitness Goals - ' . APP_NAME;
             --primary-blue: #3d7bf4;
             --input-bg: #f0f5ff;
             --border-light: #e5edf9;
-            --success-green: #10b981;
+            --success-green: #3b82f6;
             --btn-gradient: linear-gradient(135deg, #4d8df5 0%, #3470e8 100%);
         }
 
@@ -425,12 +425,21 @@ $page_title = 'Fitness Goals - ' . APP_NAME;
             align-items: center; justify-content: center; gap: 0.5rem;
         }
         .btn-primary {
-            background: var(--btn-gradient); color: white;
-            box-shadow: 0 4px 15px rgba(61, 123, 244, 0.3);
+            background: linear-gradient(135deg, #4d8df5 0%, #3470e8 100%);
+            color: white;
         }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(61, 123, 244, 0.4); }
+        .btn-primary:hover { 
+            background: linear-gradient(135deg, #3d7bf4 0%, #2056c7 100%);
+            border-radius: 12px;
+            color: white;
+        }
         .btn-secondary { background-color: var(--bg-right); color: var(--text-dark); border: 2px solid var(--border-light); }
-        .btn-secondary:hover { border-color: var(--primary-blue); color: var(--primary-blue); }
+        .btn-secondary:hover { 
+            border-color: var(--primary-blue); 
+            color: var(--primary-blue);
+            background-color: var(--input-bg);
+            border-radius: 12px;
+        }
 
         @media (max-width: 768px) {
             .container { margin: 1rem; padding: 2rem; }

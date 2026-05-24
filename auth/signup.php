@@ -277,9 +277,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            background-image: linear-gradient(rgba(210, 228, 253, 0.4), rgba(210, 228, 253, 0.9)), url('https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=1000&q=80');
-            background-size: cover;
-            background-position: center;
+            background-image: linear-gradient(135deg, #d2e4fd 0%, #b8d4fb 50%, #c5dcfc 100%);
         }
 
         /* LOGO CSS */
@@ -459,13 +457,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .btn-submit:hover {
             background: var(--btn-gradient-hover);
             border-radius: 12px; 
-            box-shadow: 0 8px 25px rgba(61, 123, 244, 0.4);
-            transform: translateY(-2px);
         }
 
         .btn-submit:active {
-            transform: translateY(0);
-            box-shadow: 0 2px 10px rgba(61, 123, 244, 0.3);
+            background: var(--btn-gradient);
         }
 
         .login-link {
@@ -558,7 +553,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
                     <?php endif; ?>
 
-                    <form method="POST" action="signup.php">
+                    <form method="POST" action="signup.php" novalidate>
                         <?php echo csrf_field(); ?>
                         
                         <div class="input-group fade-in delay-2">
@@ -573,9 +568,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                         <div class="input-group fade-in delay-3">
                             <i class="fa-solid fa-lock input-icon"></i>
-                            <input type="password" id="signupPassword" name="password" placeholder="Create Password" required>
+                            <input type="password" id="signupPassword" name="password" placeholder="Create Password" required oninput="checkPasswordStrength(this.value)">
                             <!-- Toggle Password Icon -->
                             <i class="fa-regular fa-eye password-toggle" onclick="togglePassword('signupPassword', this)"></i>
+                        </div>
+
+                        <!-- Password Strength Indicator -->
+                        <div id="passwordStrength" style="margin:-0.5rem 0 1.25rem;display:none;">
+                            <div style="display:flex;gap:4px;margin-bottom:0.4rem;">
+                                <div class="strength-bar" id="sb1" style="flex:1;height:4px;border-radius:2px;background:var(--border-light);transition:background 0.3s;"></div>
+                                <div class="strength-bar" id="sb2" style="flex:1;height:4px;border-radius:2px;background:var(--border-light);transition:background 0.3s;"></div>
+                                <div class="strength-bar" id="sb3" style="flex:1;height:4px;border-radius:2px;background:var(--border-light);transition:background 0.3s;"></div>
+                                <div class="strength-bar" id="sb4" style="flex:1;height:4px;border-radius:2px;background:var(--border-light);transition:background 0.3s;"></div>
+                            </div>
+                            <p id="strengthLabel" style="font-size:0.78rem;font-weight:600;color:var(--text-medium);"></p>
                         </div>
 
                         <!-- Hidden confirm field for JS validation -->
@@ -600,9 +606,62 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 const elements = document.querySelectorAll('.fade-in');
                 elements.forEach(el => el.classList.add('visible'));
             }, 100);
+
+            // ── Real-time inline field errors ──────────────────────────────
+            function fieldError(input, msg) {
+                input.style.borderColor = '#ef4444';
+                input.style.backgroundColor = '#fff';
+                let err = input.parentElement.querySelector('.inline-err');
+                if (!err) {
+                    err = document.createElement('p');
+                    err.className = 'inline-err';
+                    err.style.cssText = 'font-size:0.78rem;color:#ef4444;font-weight:600;margin-top:0.35rem;';
+                    input.parentElement.appendChild(err);
+                }
+                err.textContent = msg;
+            }
+            function fieldOk(input) {
+                input.style.borderColor = '';
+                input.style.backgroundColor = '';
+                const err = input.parentElement.querySelector('.inline-err');
+                if (err) err.remove();
+            }
+
+            // Name
+            const nameInput = document.querySelector('input[name="name"]');
+            if (nameInput) {
+                nameInput.addEventListener('blur', () => {
+                    nameInput.value.trim() ? fieldOk(nameInput) : fieldError(nameInput, 'Full name is required.');
+                });
+                nameInput.addEventListener('input', () => { if (nameInput.value.trim()) fieldOk(nameInput); });
+            }
+
+            // Email
+            const emailInput = document.querySelector('input[name="email"]');
+            if (emailInput) {
+                emailInput.addEventListener('blur', () => {
+                    const v = emailInput.value.trim();
+                    if (!v) { fieldError(emailInput, 'Email is required.'); return; }
+                    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) { fieldError(emailInput, 'Enter a valid email address.'); return; }
+                    fieldOk(emailInput);
+                });
+                emailInput.addEventListener('input', () => {
+                    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value.trim())) fieldOk(emailInput);
+                });
+            }
+
+            // Password — strength + inline error
+            const pwInput = document.getElementById('signupPassword');
+            if (pwInput) {
+                pwInput.addEventListener('blur', () => {
+                    const v = pwInput.value;
+                    if (!v) { fieldError(pwInput, 'Password is required.'); return; }
+                    const ok = v.length >= 8 && /[A-Z]/.test(v) && /[0-9]/.test(v) && /[^A-Za-z0-9]/.test(v);
+                    ok ? fieldOk(pwInput) : fieldError(pwInput, 'Min 8 chars, uppercase, number, and special character (!@#$...).');
+                });
+            }
         });
 
-        // Function to toggle password visibility
         function togglePassword(inputId, icon) {
             const input = document.getElementById(inputId);
             if (input.type === "password") {
@@ -615,7 +674,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 icon.classList.add("fa-eye");
             }
         }
-        
+
+        function checkPasswordStrength(val) {
+            const wrap = document.getElementById('passwordStrength');
+            const label = document.getElementById('strengthLabel');
+            const bars = [
+                document.getElementById('sb1'),
+                document.getElementById('sb2'),
+                document.getElementById('sb3'),
+                document.getElementById('sb4')
+            ];
+            if (!val) { wrap.style.display = 'none'; return; }
+            wrap.style.display = 'block';
+
+            let score = 0;
+            if (val.length >= 8) score++;
+            if (/[A-Z]/.test(val)) score++;
+            if (/[0-9]/.test(val)) score++;
+            if (/[^A-Za-z0-9]/.test(val)) score++;
+
+            const colors = ['#ef4444', '#f59e0b', '#3b82f6', '#3b82f6'];
+            const labels = ['Weak', 'Fair', 'Good', 'Strong'];
+
+            bars.forEach((bar, i) => {
+                bar.style.background = i < score ? colors[score - 1] : 'var(--border-light)';
+            });
+            label.textContent = labels[score - 1] || '';
+            label.style.color = colors[score - 1] || 'var(--text-medium)';
+        }
+
         // Copy password to confirm field on submit (for backend validation)
         document.querySelector('form').addEventListener('submit', function() {
             document.getElementById('confirmPassword').value = document.getElementById('signupPassword').value;

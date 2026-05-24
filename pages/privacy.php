@@ -8,7 +8,7 @@ $page_title = 'Privacy Policy - ' . APP_NAME;
 
 <div class="content-page-wrap fade-in">
     <div class="content-card">
-        <h1><i class="fa-regular fa-shield-halved"></i> Privacy Policy</h1>
+        <h1><i class="fa-solid fa-shield-halved"></i> Privacy &amp; Policy</h1>
         <p class="content-meta">Last updated: <?php echo htmlspecialchars(date('F j, Y'), ENT_QUOTES, 'UTF-8'); ?></p>
         <p class="page-lead">
             Smart Diet &amp; Fitness respects your privacy. This policy describes how we handle information when you use our web application.

@@ -58,8 +58,8 @@ $show_footer = ($current_page === 'index.php');
     </footer>
     <?php endif; ?>
 
-    <div class="modal-overlay" id="logoutModal" aria-hidden="true">
-        <div class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="logoutTitle">
+    <div class="modal-overlay" id="logoutModal" aria-hidden="true" style="z-index:99999;">
+        <div class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="logoutTitle" style="z-index:100000;">
             <div class="modal-header">
                 <h3 id="logoutTitle">Confirm logout</h3>
                 <button class="modal-close" type="button" data-logout-cancel="true"><i class="fa-solid fa-xmark"></i></button>
@@ -201,12 +201,13 @@ $show_footer = ($current_page === 'index.php');
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(27, 54, 121, 0.25);
+            background: rgba(15, 30, 70, 0.55);
             display: none;
             align-items: center;
             justify-content: center;
-            z-index: 350;
+            z-index: 99999;
             padding: 1.5rem;
+            backdrop-filter: blur(2px);
         }
 
         .modal-overlay.active { display: flex; }
@@ -214,11 +215,115 @@ $show_footer = ($current_page === 'index.php');
         .confirm-modal {
             width: 100%;
             max-width: 420px;
-            background-color: var(--bg-right);
+            background-color: #ffffff;
             border-radius: 24px;
-            box-shadow: 0 18px 45px rgba(27, 54, 121, 0.15);
+            box-shadow: 0 18px 45px rgba(27, 54, 121, 0.25), 0 0 0 1px rgba(27,54,121,0.08);
             padding: 2rem;
             position: relative;
+            z-index: 100000;
+        }
+
+        .confirm-modal .modal-header h3 {
+            font-size: 1.2rem;
+            color: #1b3679;
+            font-weight: 700;
+        }
+
+        .confirm-modal .modal-text {
+            font-size: 0.95rem;
+            color: #4a6aa6;
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+
+        .confirm-modal .modal-close {
+            background: none;
+            border: none;
+            color: #4a6aa6;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .confirm-modal .btn-modal-secondary {
+            background: #f0f5ff;
+            border: 2px solid #e5edf9;
+            color: #1b3679;
+            border-radius: 50px;
+            padding: 0.65rem 1.4rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .confirm-modal .btn-modal-secondary:hover {
+            background: #e5edf9;
+            border-color: #3d7bf4;
+            color: #3d7bf4;
+            border-radius: 12px;
+        }
+
+        /* Dark mode overrides for the logout modal */
+        [data-theme="dark"] .confirm-modal {
+            background-color: #1e2535;
+            box-shadow: 0 18px 45px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255,255,255,0.06);
+        }
+
+        [data-theme="dark"] .confirm-modal .modal-header h3 {
+            color: #e2e8f0;
+        }
+
+        [data-theme="dark"] .confirm-modal .modal-text {
+            color: #94a3b8;
+        }
+
+        [data-theme="dark"] .confirm-modal .modal-close {
+            color: #94a3b8;
+        }
+
+        [data-theme="dark"] .confirm-modal .modal-close:hover {
+            color: #e2e8f0;
+        }
+
+        [data-theme="dark"] .confirm-modal .btn-modal-secondary {
+            background: #2d3748;
+            border-color: #4a5568;
+            color: #e2e8f0;
+        }
+
+        [data-theme="dark"] .confirm-modal .btn-modal-secondary:hover {
+            background: #374151;
+            border-color: #60a5fa;
+            color: #60a5fa;
+            border-radius: 12px;
+        }
+
+        [data-theme="dark"] .confirm-modal .btn-modal-primary {
+            background: #3b82f6;
+            color: #ffffff;
+        }
+
+        [data-theme="dark"] .confirm-modal .btn-modal-primary:hover {
+            background: #2563eb;
+        }
+
+        .confirm-modal .btn-modal-primary {
+            background: #3b82f6;
+            color: #ffffff;
+            border: none;
+            border-radius: 50px;
+            padding: 0.75rem 1.6rem;
+            font-weight: 600;
+            text-decoration: none;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .confirm-modal .btn-modal-primary:hover {
+            background: #2563eb;
+            border-radius: 12px;
         }
 
         .modal-header {
@@ -259,17 +364,12 @@ $show_footer = ($current_page === 'index.php');
             padding: 0.75rem 1.6rem;
             font-weight: 600;
             text-decoration: none;
-            transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-            box-shadow: 0 4px 15px rgba(61, 123, 244, 0.3);
+            transition: background 0.3s ease, border-radius 0.3s ease;
         }
-
         .btn-modal-primary:hover {
             background: var(--btn-gradient-hover);
             border-radius: 12px;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(61, 123, 244, 0.4);
         }
-
         .btn-modal-secondary {
             background: transparent;
             border: 2px solid var(--border-light);
@@ -278,12 +378,24 @@ $show_footer = ($current_page === 'index.php');
             padding: 0.65rem 1.4rem;
             font-weight: 600;
             cursor: pointer;
+            transition: background 0.3s ease, border-radius 0.3s ease, border-color 0.3s ease;
+        }
+        .btn-modal-secondary:hover {
+            background: var(--input-bg);
+            border-color: var(--primary-blue);
+            color: var(--primary-blue);
+            border-radius: 12px;
         }
     </style>
 
     <!-- Script: Notification Load -->
     <?php if (is_logged_in()): ?>
     <script>
+        // Helper: always get fresh CSRF token
+        function getCsrf() {
+            return document.querySelector('meta[name="csrf-token"]')?.content || '';
+        }
+
         function showToast(message, type = 'info') {
             const toast = document.getElementById('appToast');
             if (!toast) {
@@ -305,9 +417,7 @@ $show_footer = ($current_page === 'index.php');
         document.addEventListener('DOMContentLoaded', function() {
             fetch('<?php echo APP_URL; ?>/api/notifications.php?action=count', {
                 method: 'GET',
-                headers: {
-                    'X-CSRF-Token': '<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>'
-                }
+                headers: { 'X-CSRF-Token': getCsrf() }
             })
             .then(res => res.json())
             .then(data => {
@@ -324,32 +434,67 @@ $show_footer = ($current_page === 'index.php');
                     window.location.href = '<?php echo APP_URL; ?>/pages/notification.php';
                 });
             }
+
+            // ── Navbar theme toggle ────────────────────────────────────────
+            const themeBtn = document.getElementById('themeToggleBtn');
+            const themeIcon = document.getElementById('themeToggleIcon');
+            if (themeBtn) {
+                themeBtn.addEventListener('click', function() {
+                    const current = document.body.getAttribute('data-theme') || 'light';
+                    const next = current === 'dark' ? 'light' : 'dark';
+                    document.body.setAttribute('data-theme', next);
+                    if (themeIcon) {
+                        themeIcon.className = 'fas ' + (next === 'dark' ? 'fa-sun' : 'fa-moon');
+                    }
+                    // Persist to DB silently
+                    fetch('<?php echo APP_URL; ?>/api/update_theme.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-Token': getCsrf()
+                        },
+                        body: JSON.stringify({ theme: next })
+                    }).catch(() => {});
+                });
+            }
         });
 
         const logoutModal = document.getElementById('logoutModal');
-        const logoutTriggers = document.querySelectorAll('[data-logout="true"]');
-        const logoutCancelButtons = document.querySelectorAll('[data-logout-cancel="true"]');
 
-        if (logoutModal && logoutTriggers.length > 0) {
-            logoutTriggers.forEach(trigger => {
-                trigger.addEventListener('click', (event) => {
-                    event.preventDefault();
-                    logoutModal.classList.add('active');
+        document.addEventListener('DOMContentLoaded', function() {
+            const logoutTriggers = document.querySelectorAll('[data-logout="true"]');
+            const logoutCancelButtons = document.querySelectorAll('[data-logout-cancel="true"]');
+
+            if (logoutModal && logoutTriggers.length > 0) {
+                logoutTriggers.forEach(trigger => {
+                    trigger.addEventListener('click', (event) => {
+                        event.preventDefault();
+                        logoutModal.classList.add('active');
+                    });
                 });
-            });
+            }
 
-            logoutCancelButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    logoutModal.classList.remove('active');
+            if (logoutModal) {
+                logoutCancelButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        logoutModal.classList.remove('active');
+                    });
                 });
-            });
 
-            logoutModal.addEventListener('click', (event) => {
-                if (event.target === logoutModal) {
-                    logoutModal.classList.remove('active');
-                }
-            });
-        }
+                logoutModal.addEventListener('click', (event) => {
+                    if (event.target === logoutModal) {
+                        logoutModal.classList.remove('active');
+                    }
+                });
+
+                // Keyboard: close on Escape
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape' && logoutModal.classList.contains('active')) {
+                        logoutModal.classList.remove('active');
+                    }
+                });
+            }
+        });
     </script>
     <?php endif; ?>
 

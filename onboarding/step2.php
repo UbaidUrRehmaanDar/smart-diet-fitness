@@ -108,7 +108,7 @@ $page_title = 'Activity & Lifestyle - ' . APP_NAME;
             --input-bg: #f0f5ff;
             --bg-right: #ffffff;
             --border-light: #e5edf9;
-            --success-green: #10b981;
+            --success-green: #3b82f6;
             
             --btn-gradient: linear-gradient(135deg, #4d8df5 0%, #3470e8 100%);
             --btn-gradient-hover: linear-gradient(135deg, #3d7bf4 0%, #2056c7 100%);
@@ -360,7 +360,6 @@ $page_title = 'Activity & Lifestyle - ' . APP_NAME;
         }
 
         /* Select & Textarea */
-        .form-group select,
         .form-group textarea {
             width: 100%;
             padding: 0.9rem 1.1rem;
@@ -373,7 +372,6 @@ $page_title = 'Activity & Lifestyle - ' . APP_NAME;
             transition: all 0.3s ease;
         }
 
-        .form-group select:focus,
         .form-group textarea:focus {
             outline: none;
             border-color: var(--primary-blue);
@@ -392,6 +390,35 @@ $page_title = 'Activity & Lifestyle - ' . APP_NAME;
             font-size: 0.85rem;
             margin-top: 0.5rem;
         }
+
+        /* Diet Type Cards */
+        .diet-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 0.75rem;
+        }
+        .diet-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 1rem 0.5rem;
+            border: 2px solid var(--border-light);
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            background: var(--bg-right);
+            text-align: center;
+        }
+        .diet-card input[type="radio"] { display: none; }
+        .diet-card i { font-size: 1.5rem; color: var(--text-light); transition: color 0.25s; }
+        .diet-label { font-size: 0.85rem; font-weight: 700; color: var(--text-dark); }
+        .diet-desc { font-size: 0.72rem; color: var(--text-medium); }
+        .diet-card:hover { border-color: var(--primary-blue); background: var(--input-bg); }
+        .diet-card:hover i { color: var(--primary-blue); }
+        .diet-card.selected { border-color: var(--primary-blue); background: var(--input-bg); box-shadow: 0 0 0 3px rgba(61,123,244,0.15); }
+        .diet-card.selected i { color: var(--primary-blue); }
+        @media (max-width: 600px) { .diet-grid { grid-template-columns: repeat(3, 1fr); } }
 
         /* Form Actions */
         .form-actions {
@@ -419,13 +446,11 @@ $page_title = 'Activity & Lifestyle - ' . APP_NAME;
         .btn-primary {
             background: var(--btn-gradient);
             color: white;
-            box-shadow: 0 4px 15px rgba(61, 123, 244, 0.3);
         }
 
         .btn-primary:hover {
             background: var(--btn-gradient-hover);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(61, 123, 244, 0.4);
+            border-radius: 12px;
         }
 
         .btn-secondary {
@@ -438,6 +463,7 @@ $page_title = 'Activity & Lifestyle - ' . APP_NAME;
             border-color: var(--primary-blue);
             color: var(--primary-blue);
             background-color: var(--input-bg);
+            border-radius: 12px;
         }
 
         /* Responsive */
@@ -483,13 +509,7 @@ $page_title = 'Activity & Lifestyle - ' . APP_NAME;
         <div class="form-header">
             <span class="step-indicator">Step 2 of 3</span>
             <h1>Activity & Lifestyle</h1>
-            <p>Help us understand your daily routine and dietary preferences</p>
-        </div>
-
-        <!-- Info Box -->
-        <div class="info-box">
-            <i class="fa-solid fa-circle-info"></i>
-            <span>This information helps us calculate your daily calorie needs and recommend suitable meals.</span>
+            <p>Tell us about your daily routine and food preferences</p>
         </div>
 
         <!-- Error Messages -->
@@ -554,17 +574,30 @@ $page_title = 'Activity & Lifestyle - ' . APP_NAME;
                 </div>
             </div>
 
-            <!-- Diet Type -->
+            <!-- Diet Type — styled card buttons -->
             <div class="form-group">
-                <label for="diet_type">Preferred Diet Type <span>*</span></label>
-                <select id="diet_type" name="diet_type" required>
-                    <option value="">Select Diet Type</option>
-                    <option value="omnivore">Omnivore (Everything)</option>
-                    <option value="vegetarian">Vegetarian</option>
-                    <option value="vegan">Vegan</option>
-                    <option value="keto">Keto (Low Carb)</option>
-                    <option value="paleo">Paleo</option>
-                </select>
+                <label>Preferred Diet Type <span>*</span></label>
+                <div class="diet-grid">
+                    <?php
+                    $diets = [
+                        ['value'=>'omnivore',    'label'=>'Omnivore',    'icon'=>'fa-drumstick-bite', 'desc'=>'Everything'],
+                        ['value'=>'vegetarian',  'label'=>'Vegetarian',  'icon'=>'fa-leaf',           'desc'=>'No meat'],
+                        ['value'=>'vegan',       'label'=>'Vegan',       'icon'=>'fa-seedling',       'desc'=>'Plant-based'],
+                        ['value'=>'keto',        'label'=>'Keto',        'icon'=>'fa-bacon',          'desc'=>'Low carb'],
+                        ['value'=>'paleo',       'label'=>'Paleo',       'icon'=>'fa-fire',           'desc'=>'Whole foods'],
+                    ];
+                    $sel_diet = $step_data['diet_type'] ?? '';
+                    foreach ($diets as $d):
+                    ?>
+                    <label class="diet-card <?php echo $sel_diet === $d['value'] ? 'selected' : ''; ?>">
+                        <input type="radio" name="diet_type" value="<?php echo $d['value']; ?>" required
+                               <?php echo $sel_diet === $d['value'] ? 'checked' : ''; ?>>
+                        <i class="fa-solid <?php echo $d['icon']; ?>"></i>
+                        <span class="diet-label"><?php echo $d['label']; ?></span>
+                        <span class="diet-desc"><?php echo $d['desc']; ?></span>
+                    </label>
+                    <?php endforeach; ?>
+                </div>
             </div>
 
             <!-- Allergies -->
@@ -602,5 +635,14 @@ $page_title = 'Activity & Lifestyle - ' . APP_NAME;
             </div>
         </form>
     </div>
+    <script>
+        document.querySelectorAll('.diet-card').forEach(card => {
+            card.addEventListener('click', () => {
+                document.querySelectorAll('.diet-card').forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+                card.querySelector('input[type="radio"]').checked = true;
+            });
+        });
+    </script>
 </body>
 </html>

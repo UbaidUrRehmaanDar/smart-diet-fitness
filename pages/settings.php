@@ -18,6 +18,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_settings'])) {
     verify_csrf();
     $first_name = sanitize_plain_text($_POST['first_name'] ?? '');
     $last_name = sanitize_plain_text($_POST['last_name'] ?? '');
+    
+    // 🔧 Added physical metrics & goals
+    $height_cm = (float) ($_POST['height_cm'] ?? 0);
+    $current_weight_kg = (float) ($_POST['current_weight_kg'] ?? 0);
+    $target_weight_kg = (float) ($_POST['target_weight_kg'] ?? 0);
+    
+    $valid_activity = ['sedentary', 'lightly_active', 'moderately_active', 'very_active', 'extremely_active'];
+    $activity_level = in_array($_POST['activity_level'] ?? '', $valid_activity) ? $_POST['activity_level'] : 'sedentary';
+    
+    $valid_goals = ['weight_loss', 'muscle_gain', 'maintenance'];
+    $fitness_goal = in_array($_POST['fitness_goal'] ?? '', $valid_goals) ? $_POST['fitness_goal'] : 'maintenance';
+
     $meal_reminders = isset($_POST['meal_reminders']) ? 1 : 0;
     $hydration_reminders = isset($_POST['hydration_reminders']) ? 1 : 0;
     $theme = in_array($_POST['theme'] ?? '', ['light', 'dark'], true) ? $_POST['theme'] : 'light';
@@ -62,14 +74,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_settings'])) {
             ensure_profile_row_exists($pdo, $user_id);
             ensure_preferences_row($pdo, $user_id);
 
+            // 🔧 Update queries now include onboarding data fields
             if (db_table_has_column($pdo, 'profiles', 'profile_picture')) {
                 $stmt = $pdo->prepare(
-                    'UPDATE profiles SET first_name = ?, last_name = ?, profile_picture = ? WHERE user_id = ?'
+                    'UPDATE profiles SET first_name = ?, last_name = ?, profile_picture = ?, height_cm = ?, current_weight_kg = ?, target_weight_kg = ?, activity_level = ?, fitness_goal = ? WHERE user_id = ?'
                 );
-                $stmt->execute([$first_name, $last_name, $avatar_basename, $user_id]);
+                $stmt->execute([$first_name, $last_name, $avatar_basename, $height_cm, $current_weight_kg, $target_weight_kg, $activity_level, $fitness_goal, $user_id]);
             } else {
-                $stmt = $pdo->prepare('UPDATE profiles SET first_name = ?, last_name = ? WHERE user_id = ?');
-                $stmt->execute([$first_name, $last_name, $user_id]);
+                $stmt = $pdo->prepare(
+                    'UPDATE profiles SET first_name = ?, last_name = ?, height_cm = ?, current_weight_kg = ?, target_weight_kg = ?, activity_level = ?, fitness_goal = ? WHERE user_id = ?'
+                );
+                $stmt->execute([$first_name, $last_name, $height_cm, $current_weight_kg, $target_weight_kg, $activity_level, $fitness_goal, $user_id]);
             }
 
             $pref = $pdo->prepare(
@@ -124,6 +139,12 @@ if ($profile === false) {
         'first_name' => '',
         'last_name' => '',
         'email' => $user_row['email'] ?? '',
+        // 🔧 Default fallback values for new physical/goal columns
+        'height_cm' => '',
+        'current_weight_kg' => '',
+        'target_weight_kg' => '',
+        'activity_level' => 'sedentary',
+        'fitness_goal' => 'maintenance'
     ];
 }
 
@@ -176,10 +197,11 @@ if (db_table_has_column($pdo, 'profiles', 'profile_picture')
         list-style: none; display: flex; flex-direction: column; gap: 0.5rem; border-top: 1px dashed var(--border-light); padding-top: 1.5rem;
     }
     .btn-logout {
-        display: flex; align-items: center; gap: 1rem; padding: 0.9rem 1.2rem; border-radius: 12px;
-        border: 1px solid var(--border-light); background-color: transparent; color: #ef4444; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: all 0.3s ease; width: 100%;
+        display: flex; align-items: center; gap: 1rem; padding: 0.85rem 1.2rem; border-radius: 50px;
+        border: 2px solid var(--border-light); background-color: transparent; color: #ef4444; font-weight: 600; font-size: 0.95rem; cursor: pointer;
+        transition: background 0.3s ease, border-radius 0.3s ease, border-color 0.3s ease; width: 100%;
     }
-    .btn-logout:hover { background-color: #fee2e2; border-color: #ef4444; }
+    .btn-logout:hover { background-color: #fee2e2; border-color: #ef4444; border-radius: 12px; }
     .btn-delete {
         display: flex; align-items: center; gap: 1rem; padding: 0.9rem 1.2rem; border-radius: 12px; border: none; background-color: transparent; color: var(--text-light); font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: all 0.3s ease; width: 100%;
     }
@@ -231,18 +253,23 @@ if (db_table_has_column($pdo, 'profiles', 'profile_picture')
 
     .settings-footer { display: flex; justify-content: flex-end; padding-top: 2rem; border-top: 1px solid var(--border-light); }
     .btn-save {
-        padding: 1rem 2rem; border: none; background: var(--btn-gradient); color: white; font-size: 0.95rem; font-weight: 600;
-        cursor: pointer; border-radius: 50px; box-shadow: 0 8px 20px rgba(61, 123, 244, 0.3); transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+        padding: 0.85rem 1.8rem;
+        border: none;
+        background: var(--btn-primary);
+        color: white;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        border-radius: 50px;
+        transition: background 0.3s ease, border-radius 0.3s ease;
     }
     .btn-save:hover {
-        transform: translateY(-2px);
+        background: var(--btn-primary-hover);
         border-radius: 12px;
-        background: var(--btn-gradient-hover);
-        box-shadow: 0 12px 25px rgba(61, 123, 244, 0.4);
     }
 
     .alert { padding: 1rem; border-radius: 8px; margin-bottom: 2rem; font-weight: 500; }
-    .alert-success { background-color: #d1fae5; color: #065f46; border: 1px solid #10b981; }
+    .alert-success { background-color: #dbeafe; color: #1e40af; border: 1px solid #3b82f6; }
     .alert-danger { background-color: #fee2e2; color: #991b1b; border: 1px solid #ef4444; }
 
     @media (max-width: 900px) {
@@ -254,17 +281,29 @@ if (db_table_has_column($pdo, 'profiles', 'profile_picture')
         padding: 1rem; background-color: var(--input-bg); border-radius: 12px;
     }
     .avatar-preview-wrap {
-        width: 72px; height: 72px; border-radius: 50%; overflow: hidden;
-        flex-shrink: 0; background: var(--border-light); border: 2px solid var(--border-light);
+        width: 88px; height: 88px; border-radius: 50%; overflow: hidden;
+        flex-shrink: 0; background: var(--border-light); border: 3px solid var(--border-light);
     }
-    .avatar-preview-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .avatar-preview-wrap img {
+        width: 100%; height: 100%; object-fit: cover; display: block;
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+    }
     .avatar-preview-placeholder {
         width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
-        color: var(--text-medium); font-weight: 700;
+        color: var(--text-medium); font-weight: 700; font-size: 1.5rem;
     }
     .avatar-controls { display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-start; font-size: 0.875rem; color: var(--text-medium); }
-    .avatar-controls input[type="file"] { max-width: 220px; }
     .avatar-remove-row { display: flex; align-items: center; gap: 0.5rem; }
+
+    #removeAvatarBtn:hover {
+        background: #dc2626 !important;
+        border-radius: 12px !important;
+    }
+    #removeAvatarBtn:active {
+        background: #b91c1c !important;
+        transform: scale(0.97);
+    }
 </style>
 
 <div class="settings-container">
@@ -287,11 +326,6 @@ if (db_table_has_column($pdo, 'profiles', 'profile_picture')
                     <i class="fa-solid fa-arrow-right-from-bracket"></i> Log Out
                 </button>
             </li>
-            <li>
-                <button class="btn-delete" onclick="showToast('Account deletion requires admin contact.', 'error')">
-                    <i class="fa-regular fa-trash-can"></i> Delete Account
-                </button>
-            </li>
         </ul>
     </aside>
 
@@ -306,6 +340,11 @@ if (db_table_has_column($pdo, 'profiles', 'profile_picture')
         <form method="POST" action="" enctype="multipart/form-data">
             <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
             <input type="hidden" name="update_settings" value="1">
+
+            <!-- Save Changes at the top -->
+            <div style="display:flex;justify-content:flex-end;margin-bottom:2rem;">
+                <button type="submit" class="btn-save">Save Changes</button>
+            </div>
             
             <h3 class="section-title">Profile Settings</h3>
             <?php if (db_table_has_column($pdo, 'profiles', 'profile_picture')): ?>
@@ -326,12 +365,18 @@ if (db_table_has_column($pdo, 'profiles', 'profile_picture')
                                 <?php endif; ?>
                             </div>
                             <div class="avatar-controls">
-                                <input type="file" name="profile_picture" accept="image/jpeg,image/png,image/webp">
-                                <span>JPEG or PNG or WebP, max 2 MB.</span>
+                                <label class="btn-choose-file">
+                                    <i class="fa-solid fa-camera"></i> Choose Photo
+                                    <input type="file" name="profile_picture" id="profilePicInput" accept="image/jpeg,image/png,image/webp" style="display: none;">
+                                </label>
+                                <span id="file-info-text" style="display: block; font-size: 0.75rem; color: var(--text-medium); margin-top: 0.25rem;">JPEG or PNG or WebP, max 2 MB.</span>
                                 <?php if ($avatar_preview_url): ?>
-                                    <label class="avatar-remove-row">
-                                        <input type="checkbox" name="remove_avatar" value="1"> Remove current photo
-                                    </label>
+                                    <button type="button" id="removeAvatarBtn"
+                                        id="removeAvatarBtn"
+                                        style="margin-top:0.25rem;background:#ef4444;border:none;color:#fff;border-radius:50px;padding:0.45rem 1.1rem;font-size:0.82rem;font-weight:600;cursor:pointer;transition:all 0.25s ease;display:inline-flex;align-items:center;gap:0.4rem;">
+                                        <i class="fa-solid fa-trash-can"></i> Remove photo
+                                    </button>
+                                    <input type="hidden" name="remove_avatar" id="removeAvatarInput" value="">
                                 <?php endif; ?>
                             </div>
                         </div>
@@ -358,6 +403,61 @@ if (db_table_has_column($pdo, 'profiles', 'profile_picture')
                     <div class="input-wrapper">
                         <i class="fa-regular fa-envelope"></i>
                         <input type="email" value="<?php echo htmlspecialchars($profile['email'] ?? ''); ?>" readonly style="color: var(--text-medium); background-color: var(--border-light); cursor: not-allowed;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 🔧 Added Physical Metrics fields -->
+            <h3 class="section-title" style="margin-top: 1rem;">Physical Metrics</h3>
+            <div class="input-grid">
+                <div class="input-group">
+                    <label>Height (cm)</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-ruler-vertical"></i>
+                        <input type="number" step="0.01" name="height_cm" value="<?php echo htmlspecialchars($profile['height_cm'] ?? ''); ?>" required>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Current Weight (kg)</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-weight-scale"></i>
+                        <input type="number" step="0.01" name="current_weight_kg" value="<?php echo htmlspecialchars($profile['current_weight_kg'] ?? ''); ?>" required>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Target Weight (kg)</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-bullseye"></i>
+                        <input type="number" step="0.01" name="target_weight_kg" value="<?php echo htmlspecialchars($profile['target_weight_kg'] ?? ''); ?>">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 🔧 Added Fitness Goals fields -->
+            <h3 class="section-title" style="margin-top: 1rem;">Fitness Goals</h3>
+            <div class="input-grid">
+                <div class="input-group">
+                    <label>Activity Level</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-person-running"></i>
+                        <select name="activity_level" style="width: 100%; padding: 1rem 1rem 1rem 3.2rem; border: 2px solid transparent; border-radius: 12px; background-color: var(--input-bg); font-size: 0.95rem; font-weight: 500; color: var(--text-dark); outline: none; appearance: none; cursor: pointer;">
+                            <option value="sedentary" <?php echo ($profile['activity_level'] ?? '') === 'sedentary' ? 'selected' : ''; ?>>Sedentary (Little to no exercise)</option>
+                            <option value="lightly_active" <?php echo ($profile['activity_level'] ?? '') === 'lightly_active' ? 'selected' : ''; ?>>Lightly Active (1-3 days/week)</option>
+                            <option value="moderately_active" <?php echo ($profile['activity_level'] ?? '') === 'moderately_active' ? 'selected' : ''; ?>>Moderately Active (3-5 days/week)</option>
+                            <option value="very_active" <?php echo ($profile['activity_level'] ?? '') === 'very_active' ? 'selected' : ''; ?>>Very Active (6-7 days/week)</option>
+                            <option value="extremely_active" <?php echo ($profile['activity_level'] ?? '') === 'extremely_active' ? 'selected' : ''; ?>>Extremely Active (Twice daily)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Primary Goal</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-flag-checkered"></i>
+                        <select name="fitness_goal" style="width: 100%; padding: 1rem 1rem 1rem 3.2rem; border: 2px solid transparent; border-radius: 12px; background-color: var(--input-bg); font-size: 0.95rem; font-weight: 500; color: var(--text-dark); outline: none; appearance: none; cursor: pointer;">
+                            <option value="weight_loss" <?php echo ($profile['fitness_goal'] ?? '') === 'weight_loss' ? 'selected' : ''; ?>>Weight Loss</option>
+                            <option value="maintenance" <?php echo ($profile['fitness_goal'] ?? '') === 'maintenance' ? 'selected' : ''; ?>>Maintenance</option>
+                            <option value="muscle_gain" <?php echo ($profile['fitness_goal'] ?? '') === 'muscle_gain' ? 'selected' : ''; ?>>Muscle Gain</option>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -418,14 +518,69 @@ if (db_table_has_column($pdo, 'profiles', 'profile_picture')
             elements.forEach(el => el.classList.add('visible'));
         }, 100);
 
+        // ── Live avatar preview before save ───────────────────────────────
+        const picInput = document.getElementById('profilePicInput');
+        if (picInput) {
+            picInput.addEventListener('change', function() {
+                const file = this.files[0];
+                if (!file) return;
+                const infoText = document.getElementById('file-info-text');
+                if (infoText) { infoText.textContent = file.name + ' selected.'; infoText.style.color = 'var(--primary-blue)'; }
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const wrap = document.querySelector('.avatar-preview-wrap');
+                    if (!wrap) return;
+                    wrap.innerHTML = `<img src="${e.target.result}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;">`;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // ── Remove photo button — wired via addEventListener, NOT onclick ──
+        const removeBtn = document.getElementById('removeAvatarBtn');
+        const removeInput = document.getElementById('removeAvatarInput');
+        if (removeBtn && removeInput) {
+            removeBtn.addEventListener('click', function() {
+                const wrap = document.querySelector('.avatar-preview-wrap');
+                if (removeInput.value === '1') {
+                    // Undo
+                    removeInput.value = '';
+                    removeBtn.innerHTML = '<i class="fa-solid fa-trash-can"></i> Remove photo';
+                    removeBtn.style.background = '#ef4444';
+                    removeBtn.style.borderRadius = '50px';
+                    if (wrap) wrap.style.opacity = '1';
+                } else {
+                    // Confirm removal — tick icon + darker red
+                    removeInput.value = '1';
+                    removeBtn.innerHTML = '<i class="fa-solid fa-check"></i> Marked for removal';
+                    removeBtn.style.background = '#b91c1c';
+                    removeBtn.style.borderRadius = '50px';
+                    if (wrap) wrap.style.opacity = '0.25';
+                }
+            });
+        }
+
+        // ── Live dark mode preview ─────────────────────────────────────────
         const themeBtns = document.querySelectorAll('.theme-btn');
         const themeInput = document.getElementById('themeInput');
-        
+
         themeBtns.forEach(btn => {
             btn.addEventListener('click', () => {
                 themeBtns.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                themeInput.value = btn.getAttribute('data-theme');
+                const chosen = btn.getAttribute('data-theme');
+                themeInput.value = chosen;
+                // Apply preview immediately — reverts if user doesn't save
+                document.body.setAttribute('data-theme', chosen);
+            });
+        });
+
+        // ── Logout handler (also handled by footer, but settings has its own button) ──
+        document.querySelectorAll('[data-logout="true"]').forEach(el => {
+            el.addEventListener('click', e => {
+                e.preventDefault();
+                const modal = document.getElementById('logoutModal');
+                if (modal) modal.classList.add('active');
             });
         });
     });

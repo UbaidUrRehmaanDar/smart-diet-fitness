@@ -133,7 +133,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             box-shadow: 0 4px 15px rgba(61, 123, 244, 0.3);
             transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
         }
-        .btn-primary:hover { background: var(--btn-gradient-hover); border-radius: 12px; transform: translateY(-2px); box-shadow: 0 8px 25px rgba(61, 123, 244, 0.4); }
+        .btn-primary:hover { background: var(--btn-gradient-hover); border-radius: 12px; }
 
         .message { padding: 0.9rem 1rem; border-radius: 10px; font-size: 0.85rem; margin-bottom: 1.5rem; }
         .message.error { background-color: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }

@@ -135,7 +135,7 @@ CREATE TABLE `workout_logs` (
     `exercise_name` VARCHAR(255) NOT NULL COMMENT 'e.g., Running, Weight Lifting',
     `exercise_type` ENUM('cardio', 'strength', 'flexibility', 'sports') DEFAULT 'cardio',
     `duration_mins` INT NOT NULL COMMENT 'Duration in minutes',
-    `intensity` ENUM('light', 'moderate', 'vigorous') NOT NULL COMMENT 'Exercise intensity',
+    `intensity` ENUM('light','moderate','vigorous','beginner','intermediate','advanced') NOT NULL DEFAULT 'moderate' COMMENT 'Exercise difficulty level',
     `kcal_burned` INT COMMENT 'Calories burned (can be auto-calculated)',
     `logged_date` DATE NOT NULL,
     `logged_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

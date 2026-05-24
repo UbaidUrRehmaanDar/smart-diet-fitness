@@ -5,13 +5,6 @@
  */
 ?>
 <style>
-    :root {
-        --card-bg: #ffffff;
-        --card-shadow: 0 10px 30px rgba(27, 54, 121, 0.04);
-        --radius-card: 24px;
-        --radius-inner: 12px;
-    }
-
     .content-page-wrap {
         max-width: 920px;
         margin: 0 auto;
@@ -21,10 +14,10 @@
     }
 
     .content-card {
-        background: var(--card-bg);
-        border-radius: var(--radius-card);
+        background: var(--bg-right);
+        border-radius: 24px;
         padding: 2rem;
-        box-shadow: var(--card-shadow);
+        box-shadow: 0 10px 30px rgba(27, 54, 121, 0.04);
         margin-bottom: 1.25rem;
     }
 
@@ -88,9 +81,8 @@
     }
 
     .btn-primary-inline:hover {
-        transform: translateY(-2px);
         border-radius: 12px;
-        box-shadow: 0 8px 25px rgba(61, 123, 244, 0.35);
+        background: var(--btn-gradient-hover);
     }
 
     .btn-secondary-inline {
@@ -121,10 +113,10 @@
     }
 
     .resource-card {
-        background: var(--card-bg);
-        border-radius: var(--radius-card);
+        background: var(--bg-right);
+        border-radius: 24px;
         padding: 2rem;
-        box-shadow: var(--card-shadow);
+        box-shadow: 0 10px 30px rgba(27, 54, 121, 0.04);
     }
 
     .resource-card .icon-wrap {
