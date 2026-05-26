@@ -171,15 +171,18 @@ function get_notification_color($type) {
     .btn-view-all:hover { color: var(--primary-blue-hover); }
 
     @media (max-width: 768px) {
-        .notif-header-area { padding: 1.5rem 1.5rem 0 1.5rem; }
-        .notif-tabs { padding: 0 1.5rem; gap: 1rem; overflow-x: auto; white-space: nowrap; }
+        .notif-header-area { padding: 1.25rem 1.25rem 0 1.25rem; }
+        .notif-title h1 { font-size: 1.4rem; }
+        .notif-title-row { flex-direction: column; gap: 0.75rem; align-items: flex-start; }
+        .notif-tabs { padding: 0 1.25rem; gap: 0.75rem; overflow-x: auto; white-space: nowrap; }
         .notif-list { padding: 0.5rem; }
-        .notif-item { padding: 1rem; flex-direction: column; position: relative; }
-        .notif-time { position: absolute; top: 1.2rem; right: 1rem; }
+        .notif-item { padding: 1rem; gap: 0.75rem; }
+        .notif-time { font-size: 0.7rem; white-space: normal; }
+        .main-content { padding: 1rem !important; }
     }
 </style>
 
-<div class="main-content fade-in" style="padding: 3rem; width: 100%; display: flex; justify-content: center;">
+<div class="main-content fade-in" style="width: 100%; display: flex; justify-content: center; padding: clamp(1rem, 4vw, 3rem);">
     <div class="notifications-card fade-in delay-1">
         
         <!-- Header Area -->

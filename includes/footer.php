@@ -415,6 +415,7 @@ $show_footer = ($current_page === 'index.php');
 
         // Load unread notification count on page load
         document.addEventListener('DOMContentLoaded', function() {
+
             fetch('<?php echo APP_URL; ?>/api/notifications.php?action=count', {
                 method: 'GET',
                 headers: { 'X-CSRF-Token': getCsrf() }

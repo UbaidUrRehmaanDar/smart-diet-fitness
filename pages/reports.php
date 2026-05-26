@@ -304,9 +304,15 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
         .grid-bottom { grid-template-columns: 1fr; }
     }
     @media (max-width: 768px) {
+        .reports-wrapper { padding: 1rem !important; }
         .grid-top { grid-template-columns: 1fr; }
+        .header-actions { flex-wrap: wrap; gap: 0.5rem; }
+        .header-actions .custom-select,
+        .header-actions .btn-download { width: 100%; justify-content: center; }
         .nutrients-content { flex-direction: column; text-align: center; }
-        .legend { justify-content: center; }
+        .legend { justify-content: center; flex-wrap: wrap; }
+        .page-header { flex-direction: column; align-items: flex-start; }
+        .card { padding: 1.25rem; }
     }
 
     /* ── Print / PDF ── */
@@ -322,7 +328,7 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
     }
 </style>
 
-<div class="reports-wrapper" style="padding: 3rem; max-width: 1400px; margin: 0 auto; width: 100%;">
+<div class="reports-wrapper" style="max-width: 1400px; margin: 0 auto; width: 100%; padding: clamp(1rem, 4vw, 3rem);">
     <!-- Page Header -->
     <div class="page-header fade-in delay-1">
         <div class="header-title">

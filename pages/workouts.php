@@ -111,7 +111,7 @@ try {
     .search-wrapper {
         flex: 1;
         position: relative;
-        min-width: 300px;
+        min-width: 0;
     }
 
     .search-wrapper i {
@@ -169,7 +169,7 @@ try {
     }
 
     .workouts-page-content {
-        padding: 3rem;
+        padding: clamp(1rem, 4vw, 3rem);
         max-width: 1400px;
         margin: 0 auto;
         width: 100%;
@@ -584,13 +584,20 @@ try {
     @media (max-width: 1100px) {
         .page-grid { grid-template-columns: 1fr; }
         .sidebar { flex-direction: row; flex-wrap: wrap; }
-        .side-card, .achievement-card, .community-link { flex: 1; min-width: 300px; }
+        .side-card, .achievement-card, .community-link { flex: 1; min-width: 0; }
     }
 
     @media (max-width: 768px) {
+        .workouts-page-content { padding: 1rem; }
         .filters-bar { flex-direction: column; align-items: stretch; }
         .dropdowns { flex-wrap: wrap; }
-        .custom-select { flex: 1; }
+        .custom-select { flex: 1; min-width: 0; }
+        .search-wrapper { min-width: 0; }
+        .workouts-grid { grid-template-columns: 1fr; }
+        .sidebar { flex-direction: column; }
+        .side-card, .achievement-card, .community-link { min-width: 0; }
+        .workout-modal { padding: 1.25rem; }
+        .form-row { grid-template-columns: 1fr; }
     }
 </style>
 

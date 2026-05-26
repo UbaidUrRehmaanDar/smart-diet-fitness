@@ -277,7 +277,8 @@ $active_nav = $nav_map[$current_page] ?? '';
             font-size: 0.9rem;
             color: var(--text-dark);
             outline: none;
-            width: 250px;
+            width: 200px;
+            max-width: 100%;
             transition: all 0.3s ease;
         }
 
@@ -399,22 +400,73 @@ $active_nav = $nav_map[$current_page] ?? '';
         /* Responsive */
         @media (max-width: 768px) {
             .navbar {
-                padding: 1rem;
-                flex-wrap: wrap;
+                padding: 0.75rem 1rem;
+                flex-wrap: nowrap;
+            }
+            .nav-left { gap: 0.5rem; }
+            .nav-links { display: none; }   /* hidden — replaced by bottom bar */
+            .search-bar { display: none !important; }
+        }
+
+        @media (min-width: 769px) {
+            .mobile-bottom-nav { display: none !important; }
+        }
+
+        /* ── Mobile Bottom Navigation Bar ── */
+        .mobile-bottom-nav {
+            display: none; /* shown only on mobile via media query below */
+        }
+
+        @media (max-width: 768px) {
+            .mobile-bottom-nav {
+                display: flex;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 64px;
+                background-color: var(--bg-right);
+                border-top: 1px solid var(--border-light);
+                z-index: 500;
+                align-items: stretch;
+                padding: 0 0.25rem;
+                padding-bottom: env(safe-area-inset-bottom, 0);
             }
 
-            .nav-left {
-                gap: 1.5rem;
+            .mobile-bottom-nav a {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 0.2rem;
+                text-decoration: none;
+                color: var(--text-light);
+                font-size: 0.6rem;
+                font-weight: 600;
+                letter-spacing: 0.3px;
+                transition: color 0.2s ease;
+                padding: 0.5rem 0.25rem;
+                border-radius: 12px;
+                margin: 0.35rem 0.1rem;
             }
 
-            .nav-links {
-                gap: 1rem;
-                font-size: 0.85rem;
+            .mobile-bottom-nav a i {
+                font-size: 1.25rem;
+                transition: transform 0.2s ease;
             }
 
-            .search-bar {
-                display: none !important;
+            .mobile-bottom-nav a:hover,
+            .mobile-bottom-nav a.active {
+                color: var(--primary-blue);
+                background-color: var(--input-bg);
             }
+
+            .mobile-bottom-nav a.active i {
+                transform: translateY(-2px);
+            }
+
+            /* Push page content above the bottom bar — handled by global.css */
         }
     </style>
 </head>
@@ -523,6 +575,32 @@ $active_nav = $nav_map[$current_page] ?? '';
             }
         }
     </style>
+    <?php endif; ?>
+
+    <!-- Mobile Bottom Navigation Bar -->
+    <?php if (is_logged_in()): ?>
+    <nav class="mobile-bottom-nav" aria-label="Mobile navigation">
+        <a href="<?php echo APP_URL; ?>/pages/dashboard.php" class="<?php echo $active_nav === 'dashboard' ? 'active' : ''; ?>">
+            <i class="fas fa-house"></i>
+            <span>Home</span>
+        </a>
+        <a href="<?php echo APP_URL; ?>/pages/nutrition.php" class="<?php echo $active_nav === 'nutrition' ? 'active' : ''; ?>">
+            <i class="fas fa-utensils"></i>
+            <span>Nutrition</span>
+        </a>
+        <a href="<?php echo APP_URL; ?>/pages/workouts.php" class="<?php echo $active_nav === 'workouts' ? 'active' : ''; ?>">
+            <i class="fas fa-dumbbell"></i>
+            <span>Workouts</span>
+        </a>
+        <a href="<?php echo APP_URL; ?>/pages/progress.php" class="<?php echo $active_nav === 'progress' ? 'active' : ''; ?>">
+            <i class="fas fa-chart-line"></i>
+            <span>Progress</span>
+        </a>
+        <a href="<?php echo APP_URL; ?>/pages/reports.php" class="<?php echo $active_nav === 'reports' ? 'active' : ''; ?>">
+            <i class="fas fa-file-lines"></i>
+            <span>Reports</span>
+        </a>
+    </nav>
     <?php endif; ?>
 
     <!-- Main Content Wrapper -->

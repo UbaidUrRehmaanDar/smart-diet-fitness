@@ -638,12 +638,20 @@ if (table_exists($pdo, 'workout_logs')) {
         .btn-update { position: relative; bottom: 0; right: 0; width: 100%; margin-top: 1rem; justify-content: center; }
     }
     @media (max-width: 768px) {
+        .progress-wrapper { padding: 1rem !important; }
+        .header-title h1 { font-size: 1.6rem; }
         .time-filters { width: 100%; justify-content: space-between; }
-        .time-filter { padding: 0.5rem 0.8rem; }
+        .time-filter { padding: 0.5rem 0.6rem; font-size: 0.8rem; }
+        .summary-card { flex-wrap: wrap; gap: 1rem; }
+        .summary-info h2 { font-size: 1.4rem; }
+        .form-row { grid-template-columns: 1fr; }
+        .card { padding: 1.25rem; }
+        .bar-chart { padding: 0; }
+        .measurements-table td, .measurements-table th { padding: 0.75rem 0; font-size: 0.85rem; }
     }
 </style>
 
-<div class="progress-wrapper" style="padding: 3rem; max-width: 1400px; margin: 0 auto; width: 100%;">
+<div class="progress-wrapper" style="max-width: 1400px; margin: 0 auto; width: 100%; padding: clamp(1rem, 4vw, 3rem);">
     <!-- Page Header & Time Filter -->
     <div class="page-header fade-in delay-1">
         <div class="header-title">

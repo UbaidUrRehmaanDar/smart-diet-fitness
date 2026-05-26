@@ -186,7 +186,7 @@ usort($activities, function($a, $b) {
     .delay-4 { transition-delay: 0.4s; }
 
     main.main-content {
-        padding: 3rem;
+        padding: clamp(1rem, 4vw, 3rem);
         box-sizing: border-box;
     }
 
@@ -296,9 +296,21 @@ usort($activities, function($a, $b) {
     }
     .fab-extended:hover { border-radius: 12px; background: var(--btn-gradient-hover); }
 
-    @media (max-width: 1024px) { .achievements-content { grid-template-columns: 1fr; } .profile-card { max-width: 600px; margin: 0 auto; width: 100%; } }
-    @media (max-width: 768px) { main.main-content { padding: 1.5rem; } }
-    @media (max-width: 768px) { .act-row, .act-desc { flex-direction: column; align-items: flex-start; gap: 0.25rem; } .act-time { order: -1; } .fab-extended { bottom: 1.5rem; right: 1.5rem; padding: 0 1.5rem; font-size: 0.95rem; } }
+    @media (max-width: 1024px) {
+        .achievements-content { grid-template-columns: 1fr; }
+        .profile-card { max-width: 600px; margin: 0 auto; width: 100%; }
+    }
+    @media (max-width: 768px) {
+        main.main-content { padding: 1rem; }
+        .achievements-content { gap: 1.5rem; }
+        .act-row, .act-desc { flex-direction: column; align-items: flex-start; gap: 0.25rem; }
+        .act-time { order: -1; }
+        .fab-extended { bottom: 1.5rem; right: 1rem; padding: 0 1.2rem; font-size: 0.9rem; height: 52px; }
+        .card { padding: 1.25rem; }
+        .stats-grid { grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+        .milestones-container { gap: 1.5rem; }
+        .milestone-icon { width: 56px; height: 56px; font-size: 1.4rem; }
+    }
 </style>
 
 <div class="achievements-content">

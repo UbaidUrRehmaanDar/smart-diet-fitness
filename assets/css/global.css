@@ -71,7 +71,7 @@
     box-sizing: border-box;
 }
 
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; overflow-x: hidden; }
 
 body {
     font-family: 'Inter', sans-serif;
@@ -358,6 +358,22 @@ input:focus, select:focus, textarea:focus {
 /* ── Responsive Helpers ──────────────────────────────────────────────────── */
 @media (max-width: 768px) {
     .hide-mobile { display: none !important; }
+
+    /* Prevent ANY element from causing horizontal scroll */
+    * { max-width: 100%; }
+    img, video, iframe, table { max-width: 100%; }
+
+    /* Bottom nav padding — applied globally so no page gets cut off */
+    main.main-content,
+    .dashboard-container,
+    .nutrition-container,
+    .workouts-page-content,
+    .progress-wrapper,
+    .reports-wrapper,
+    .achievements-content,
+    .settings-container {
+        padding-bottom: calc(64px + 1.5rem) !important;
+    }
 }
 @media (min-width: 769px) {
     .hide-desktop { display: none !important; }

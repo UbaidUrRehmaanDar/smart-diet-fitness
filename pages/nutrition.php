@@ -151,7 +151,7 @@ $water_drops_filled = min(8, floor($water_logged / 250));
 
     /* --- Main Layout Grid --- */
     .nutrition-container {
-        padding: 3rem;
+        padding: clamp(1rem, 4vw, 3rem);
         max-width: 1400px;
         margin: 0 auto;
         display: grid;
@@ -604,9 +604,18 @@ $water_drops_filled = min(8, floor($water_logged / 250));
 
     /* --- Responsive Design --- */
     @media (max-width: 1024px) {
-        .nutrition-container {
-            grid-template-columns: 1fr;
-        }
+        .nutrition-container { grid-template-columns: 1fr; padding: 1.5rem; }
+    }
+    @media (max-width: 768px) {
+        .nutrition-container { padding: 1rem; gap: 1.5rem; }
+        .date-selector { padding: 1rem 1.25rem; }
+        .date-info h2 { font-size: 1rem; }
+        .meal-header { flex-direction: column; gap: 0.5rem; }
+        .meal-total { font-size: 1.3rem; }
+        .form-row { grid-template-columns: 1fr; }
+        .card { padding: 1.25rem; }
+        .drops-container { gap: 0.3rem; }
+        .drop-icon { font-size: 1.2rem; }
     }
 </style>
 

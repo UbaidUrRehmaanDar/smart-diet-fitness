@@ -478,26 +478,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             font-size: 0.75rem;
         }
 
-        /* --- Responsive Design --- */
         @media (max-width: 900px) {
-            .split-layout {
-                flex-direction: column;
-            }
-
-            .left-panel {
-                padding: 3rem 2rem;
-                min-height: 40vh;
-                justify-content: center;
-                gap: 2rem;
-            }
-
-            .hero-content h1 {
-                font-size: 2.5rem;
-            }
-
-            .right-panel {
-                padding: 3rem 2rem;
-            }
+            .split-layout { flex-direction: column; }
+            .left-panel { padding: 2rem 1.5rem; min-height: auto; gap: 1.5rem; }
+            .hero-content h1 { font-size: 2rem; }
+            .right-panel { padding: 2rem 1.5rem; }
+        }
+        @media (max-width: 480px) {
+            .hero-content h1 { font-size: 1.7rem; }
+            .form-container { max-width: 100%; }
         }
 
         /* Error/Success message styling */

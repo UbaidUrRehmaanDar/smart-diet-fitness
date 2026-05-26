@@ -152,7 +152,7 @@ $kcal_remaining       = max(0, $kcal_target - $total_kcal);
 
         /* Main Container */
         .dashboard-container {
-            padding: 3rem;
+            padding: clamp(1rem, 4vw, 3rem);
             max-width: 1400px;
             margin: 0 auto;
         }
@@ -416,23 +416,21 @@ $kcal_remaining       = max(0, $kcal_target - $total_kcal);
 
         /* Responsive */
         @media (max-width: 1024px) {
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-            }
+            .dashboard-grid { grid-template-columns: 1fr; }
         }
         @media (max-width: 768px) {
-            .dashboard-container {
-                padding: 1.5rem;
-            }
-            .macro-display {
-                flex-direction: column;
-                gap: 1rem;
-            }
+            .dashboard-container { padding: 1rem; }
+            .header-section h1 { font-size: 1.4rem; }
+            .macro-display { flex-direction: column; gap: 1rem; }
+            .calorie-display .val { font-size: 2.4rem; }
+            .days-row { gap: 0; }
+            .day-item { font-size: 0.7rem; padding: 0.3rem; }
+            .adherence-item { flex-wrap: wrap; gap: 0.5rem; }
+            .card { padding: 1.25rem; }
         }
     </style>
 
     <div class="dashboard-container">
-        <!-- Header Section -->
         <div class="header-section">
             <h1>Your personalized diet and fitness overview for today, <?php echo $month_day; ?>.</h1>
         </div>

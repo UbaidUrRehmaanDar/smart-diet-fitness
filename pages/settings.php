@@ -176,7 +176,7 @@ if (db_table_has_column($pdo, 'profiles', 'profile_picture')
     .delay-4 { transition-delay: 0.4s; }
 
     .settings-container {
-        padding: 3rem; max-width: 1200px; margin: 0 auto; width: 100%; flex: 1; display: flex; gap: 3rem; align-items: flex-start;
+        padding: clamp(1rem, 4vw, 3rem); max-width: 1200px; margin: 0 auto; width: 100%; flex: 1; display: flex; gap: 3rem; align-items: flex-start;
     }
 
     .settings-sidebar { width: 250px; flex-shrink: 0; }
@@ -273,7 +273,19 @@ if (db_table_has_column($pdo, 'profiles', 'profile_picture')
     .alert-danger { background-color: #fee2e2; color: #991b1b; border: 1px solid #ef4444; }
 
     @media (max-width: 900px) {
-        .settings-container { flex-direction: column; } .settings-sidebar { width: 100%; } .sidebar-menu { flex-direction: row; flex-wrap: wrap; margin-bottom: 1.5rem; } .sidebar-menu li { flex: 1; min-width: 140px; } .sidebar-header { text-align: center; } .input-grid { grid-template-columns: 1fr; }
+        .settings-container { flex-direction: column; padding: 1rem; }
+        .settings-sidebar { width: 100%; }
+        .sidebar-menu { flex-direction: row; flex-wrap: wrap; margin-bottom: 1.5rem; }
+        .sidebar-menu li { flex: 1; min-width: 120px; }
+        .sidebar-header { text-align: center; }
+        .input-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) {
+        .settings-content { padding: 1.25rem; }
+        .sidebar-menu li a { padding: 0.7rem 0.8rem; font-size: 0.85rem; }
+        .preference-row { flex-wrap: wrap; gap: 0.75rem; }
+        .theme-selector { width: 100%; }
+        .theme-btn { flex: 1; justify-content: center; }
     }
 
     .avatar-setting-row {
